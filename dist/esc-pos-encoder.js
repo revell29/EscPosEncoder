@@ -10210,7 +10210,7 @@ class EscPosEncoder {
      */
     text(value, wrap) {
         if (wrap) {
-            let w = linewrap(wrap, {lineBreak: '\r\n'});
+            let w = linewrap(wrap, { lineBreak: '\r\n' });
             value = w(value);
         }
 
@@ -10267,7 +10267,7 @@ class EscPosEncoder {
      */
     underline(value) {
         if (typeof value === 'undefined') {
-            value = ! this._state.underline;
+            value = !this._state.underline;
         }
 
         this._state.underline = value;
@@ -10288,7 +10288,7 @@ class EscPosEncoder {
      */
     italic(value) {
         if (typeof value === 'undefined') {
-            value = ! this._state.italic;
+            value = !this._state.italic;
         }
 
         this._state.italic = value;
@@ -10309,46 +10309,71 @@ class EscPosEncoder {
      */
     bold(value) {
         if (typeof value === 'undefined') {
-            value = ! this._state.bold;
+            value = !this._state.bold;
         }
 
         this._state.bold = value;
 
         this._queue([
-            0x1b, 0x45, this._state.bold?0xF0:0x00,
+            0x1b, 0x45, Number(value),
         ]);
 
         return this;
     }
 
-   /**
-     * Change text size
-     *
-     * @param  {string}          value   small or normal
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
+    /**
+      * Change text size
+      *
+      * @param  {string}          value   small or normal
+      * @return {object}                  Return the object, for easy chaining commands
+      *
+      */
     size(value) {
-        if (value === 'small') {
-            value = 0x01;
-        } else {
-            value = 0x00;
+        let realSize = 0;
+        switch (value) {
+            case 0:
+                realSize = 0;
+                break;
+            case 1:
+                realSize = 17;
+                break;
+            case 2:
+                realSize = 34;
+                break;
+            case 3:
+                realSize = 51;
+                break;
+            case 4:
+                realSize = 68;
+                break;
+            case 5:
+                realSize = 85;
+                break;
+            case 6:
+                realSize = 102;
+                break;
+            case 7:
+                realSize = 119;
+                break;
         }
 
         this._queue([
-            0x1b, 0x4d, value,
+            0x1b, 0x4d, 0x00,
+        ]);
+        this._queue([
+            0x1d, 0x21, realSize,
         ]);
 
         return this;
     }
 
-   /**
-     * Change text alignment
-     *
-     * @param  {string}          value   left, center or right
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
+    /**
+      * Change text alignment
+      *
+      * @param  {string}          value   left, center or right
+      * @return {object}                  Return the object, for easy chaining commands
+      *
+      */
     align(value) {
         const alignments = {
             'left': 0x00,
