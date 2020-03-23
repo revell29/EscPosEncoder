@@ -8,9 +8,9 @@ export default class EscPosEncoder {
     private _queue;
     initialize(): this;
     codepage(value: any): this;
-    text(value: any, wrap: any): this;
+    text(value: any, wrap?: any): this;
     newline(): this;
-    line(value: any, wrap: any): this;
+    line(value: any, wrap?: any): this;
     underline(value: any): this;
     italic(value: any): this;
     bold(value: any): this;

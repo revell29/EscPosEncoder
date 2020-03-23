@@ -147,7 +147,7 @@ export default class EscPosEncoder {
      * @return {object}          Return the object, for easy chaining commands
      *
      */
-    text(value, wrap) {
+    text(value, wrap?) {
         if (wrap) {
             let w = linewrap(wrap, { lineBreak: '\r\n' });
             value = w(value);
@@ -190,7 +190,7 @@ export default class EscPosEncoder {
      * @return {object}          Return the object, for easy chaining commands
      *
      */
-    line(value, wrap) {
+    line(value, wrap?) {
         this.text(value, wrap);
         this.newline();
 
