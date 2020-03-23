@@ -1,11 +1,13 @@
-const iconv = require('iconv-lite');
-const linewrap = require('linewrap');
-
+import iconv from 'iconv-lite';
+import linewrap from 'linewrap';
 
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
-class EscPosEncoder {
+export default class EscPosEncoder {
+    private _buffer
+    private _codepage
+    private _state
     /**
      * Create a new object
      *
@@ -18,7 +20,7 @@ class EscPosEncoder {
      * Reset the state of the object
      *
     */
-    _reset() {
+    private _reset() {
         this._buffer = [];
         this._codepage = 'ascii';
 
@@ -37,7 +39,7 @@ class EscPosEncoder {
      * @return {object}          Encoded string as a ArrayBuffer
      *
     */
-    _encode(value) {
+   private _encode(value) {
         return iconv.encode(value, this._codepage);
     }
 
@@ -47,7 +49,7 @@ class EscPosEncoder {
      * @param  {array}   value  And array of numbers, arrays, buffers or Uint8Arrays to add to the buffer
      *
     */
-    _queue(value) {
+   private _queue(value) {
         value.forEach((item) => this._buffer.push(item));
     }
 
@@ -113,9 +115,9 @@ class EscPosEncoder {
             throw new Error('Unknown codepage');
         }
 
-        if (value in iconv.encodings) {
-            if (typeof iconv.encodings[value] === 'string') {
-                codepage = iconv.encodings[value];
+        if (value in (iconv as any).encodings) {
+            if (typeof (iconv as any).encodings[value] === 'string') {
+                codepage = (iconv as any).encodings[value];
             } else {
                 codepage = value;
             }
@@ -529,5 +531,3 @@ class EscPosEncoder {
         return result;
     }
 }
-
-module.exports = EscPosEncoder;
