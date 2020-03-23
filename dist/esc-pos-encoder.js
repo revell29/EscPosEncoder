@@ -1,8 +1,8 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.EscPosEncoder = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
-var iconv_lite_1 = require("iconv-lite");
-var linewrap_1 = require("linewrap");
+var iconv = require("iconv-lite");
+var linewrap = require("linewrap");
 var EscPosEncoder = (function () {
     function EscPosEncoder() {
         this._reset();
@@ -18,7 +18,7 @@ var EscPosEncoder = (function () {
         };
     };
     EscPosEncoder.prototype._encode = function (value) {
-        return iconv_lite_1["default"].encode(value, this._codepage);
+        return iconv.encode(value, this._codepage);
     };
     EscPosEncoder.prototype._queue = function (value) {
         var _this = this;
@@ -65,12 +65,12 @@ var EscPosEncoder = (function () {
             'windows1258': [0x5e, false]
         };
         var codepage;
-        if (!iconv_lite_1["default"].encodingExists(value)) {
+        if (!iconv.encodingExists(value)) {
             throw new Error('Unknown codepage');
         }
-        if (value in iconv_lite_1["default"].encodings) {
-            if (typeof iconv_lite_1["default"].encodings[value] === 'string') {
-                codepage = iconv_lite_1["default"].encodings[value];
+        if (value in iconv.encodings) {
+            if (typeof iconv.encodings[value] === 'string') {
+                codepage = iconv.encodings[value];
             }
             else {
                 codepage = value;
@@ -93,7 +93,7 @@ var EscPosEncoder = (function () {
     };
     EscPosEncoder.prototype.text = function (value, wrap) {
         if (wrap) {
-            var w = linewrap_1["default"](wrap, { lineBreak: '\r\n' });
+            var w = linewrap(wrap, { lineBreak: '\r\n' });
             value = w(value);
         }
         var bytes = this._encode(value);
@@ -213,7 +213,7 @@ var EscPosEncoder = (function () {
             'codabar': 0x06
         };
         if (symbology in symbologies) {
-            var bytes = iconv_lite_1["default"].encode(value, 'ascii');
+            var bytes = iconv.encode(value, 'ascii');
             this._queue([
                 0x1d, 0x68, height,
                 0x1d, 0x77, symbology === 'code39' ? 0x02 : 0x03,
@@ -275,7 +275,7 @@ var EscPosEncoder = (function () {
         else {
             throw new Error('Error level must be l, m, q or h');
         }
-        var bytes = iconv_lite_1["default"].encode(value, 'iso88591');
+        var bytes = iconv.encode(value, 'iso88591');
         var length = bytes.length + 3;
         this._queue([
             0x1d, 0x28, 0x6b, length % 0xff, length / 0xff, 0x31, 0x50, 0x30, bytes,
@@ -326,7 +326,7 @@ var EscPosEncoder = (function () {
     };
     return EscPosEncoder;
 }());
-exports["default"] = EscPosEncoder;
+module.exports = EscPosEncoder;
 
 },{"iconv-lite":26,"linewrap":32}],2:[function(require,module,exports){
 'use strict'

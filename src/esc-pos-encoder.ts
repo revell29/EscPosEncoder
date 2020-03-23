@@ -1,10 +1,10 @@
-import iconv from 'iconv-lite';
-import linewrap from 'linewrap';
+import * as iconv from 'iconv-lite';
+import * as linewrap from 'linewrap';
 
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
-export default class EscPosEncoder {
+class EscPosEncoder {
     private _buffer
     private _codepage
     private _state
@@ -531,3 +531,5 @@ export default class EscPosEncoder {
         return result;
     }
 }
+
+module.exports = EscPosEncoder;
