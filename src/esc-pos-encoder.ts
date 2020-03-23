@@ -4,7 +4,7 @@ import * as linewrap from 'linewrap';
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
-class EscPosEncoder {
+export default class EscPosEncoder {
     private _buffer
     private _codepage
     private _state
@@ -531,5 +531,3 @@ class EscPosEncoder {
         return result;
     }
 }
-
-module.exports = EscPosEncoder;

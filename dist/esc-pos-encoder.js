@@ -326,7 +326,7 @@ var EscPosEncoder = (function () {
     };
     return EscPosEncoder;
 }());
-module.exports = EscPosEncoder;
+exports["default"] = EscPosEncoder;
 
 },{"iconv-lite":26,"linewrap":32}],2:[function(require,module,exports){
 'use strict'
