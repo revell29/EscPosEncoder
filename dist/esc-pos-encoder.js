@@ -8,14 +8,14 @@ var linewrap = require("linewrap");
  */
 var EscPosEncoder = /** @class */ (function () {
     /**
-     * Create a new object
+     * Create a new EscPosEncoder
      *
      */
     function EscPosEncoder() {
         this._reset();
     }
     /**
-     * Reset the state of the object
+     * Reset the state of the EscPosEncoder
      *
      */
     EscPosEncoder.prototype._reset = function () {
@@ -32,7 +32,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Encode a string with the current code page
      *
      * @param  {string}   value  String to encode
-     * @returns {object}          Encoded string as a ArrayBuffer
+     * @returns {Buffer}          Encoded string as a ArrayBuffer
      *
      */
     EscPosEncoder.prototype._encode = function (value) {
@@ -49,9 +49,61 @@ var EscPosEncoder = /** @class */ (function () {
         value.forEach(function (item) { return _this._buffer.push(item); });
     };
     /**
+     * 获取单个字符的字节数，也就是打印占宽
+     *
+     * @param  {string}   char  需要被分割的字符串
+     * @returns {number} 返回字节数（占宽）
+     */
+    EscPosEncoder.prototype.getCharLength = function (char) {
+        var length;
+        // eslint-disable-next-line no-control-regex
+        if (/^[\x00-\xff]$/.test(char)) {
+            length = 1;
+        }
+        else {
+            length = 2;
+        }
+        return length;
+    };
+    /**
+     * 根据打印宽度分割字符串
+     *
+     * @param  {string}   str  需要被分割的字符串
+     * @param  {number}   maxLength  分割长度
+     * @returns {Array} 返回被分割的字符串数组
+     */
+    EscPosEncoder.prototype.splitByWidth = function (str, maxLength) {
+        var width = 0;
+        var result = [];
+        for (var i = 0; i < str.length; i++) {
+            var char = str.charAt(i);
+            width += this.getCharLength(char);
+            if (width > maxLength) {
+                result.push(str.slice(0, i));
+                result = result.concat(this.splitByWidth(str.slice(i), maxLength));
+                return result;
+            }
+        }
+        return [str];
+    };
+    /**
+     * 计算字符串的字节长度，也就是打印的宽度
+     *
+     * @param  {string}   str  需要计算的字符串
+     * @returns {number} 返回被分割的字符串数组
+     */
+    EscPosEncoder.prototype.getStrWidth = function (str) {
+        var width = 0;
+        for (var i = 0; i < str.length; i++) {
+            var char = str.charAt(i);
+            width += this.getCharLength(char);
+        }
+        return width;
+    };
+    /**
      * Initialize the printer
      *
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.initialize = function () {
@@ -61,20 +113,60 @@ var EscPosEncoder = /** @class */ (function () {
         return this;
     };
     /**
-     * Initialize the printer
+     * 打印一行字符
      *
-     * @param {string} a dddd
-     * @returns {object}          Return the object, for easy chaining commands
+     * @param {string} char 打印成行的字符
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    EscPosEncoder.prototype.printLine = function (a) {
-        console.log(a);
+    EscPosEncoder.prototype.printLine = function (char) {
+        char = char.slice(0, 1);
+        this.line(char.repeat(32));
+        return this;
+    };
+    /**
+     * 打印空行
+     *
+     * @param {number} num 行数
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    EscPosEncoder.prototype.emptyLine = function (num) {
+        if (num === void 0) { num = 1; }
+        for (var i = 0; i < num; i++) {
+            this.line('');
+        }
+        return this;
+    };
+    /**
+     * 打印菜品
+     *
+     * @param {Array} dishes 菜品信息数组
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    EscPosEncoder.prototype.printDishs = function (dishes) {
+        var _this = this;
+        var getCountAndPriceStr = function (count, price) {
+            var countStr = '*' + count;
+            var spaceNum = 10 - _this.getStrWidth(countStr) - _this.getStrWidth(String(price));
+            return countStr + ' '.repeat(spaceNum) + String(price);
+        };
+        dishes.forEach(function (dish) {
+            var fixedWidthStrArr = _this.splitByWidth(dish.name, 18);
+            fixedWidthStrArr.forEach(function (str, index) {
+                if (index === 0) {
+                    _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+                }
+                else {
+                    _this.line(str);
+                }
+            });
+        });
         return this;
     };
     /**
      * Change the code page
      *
      * @param  {string}   value  The codepage that we set the printer to
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.codepage = function (value) {
@@ -143,7 +235,7 @@ var EscPosEncoder = /** @class */ (function () {
      *
      * @param  {string}   value  Text that needs to be printed
      * @param  {number}   wrap   Wrap text after this many positions
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.text = function (value, wrap) {
@@ -167,7 +259,7 @@ var EscPosEncoder = /** @class */ (function () {
     /**
      * Print a newline
      *
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.newline = function () {
@@ -181,7 +273,7 @@ var EscPosEncoder = /** @class */ (function () {
      *
      * @param  {string}   value  Text that needs to be printed
      * @param  {number}   wrap   Wrap text after this many positions
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.line = function (value, wrap) {
@@ -190,10 +282,23 @@ var EscPosEncoder = /** @class */ (function () {
         return this;
     };
     /**
+     * 打印两个字符分别在纸的左右两侧
+     *
+     * @param  {string}   str1  左侧的字符串
+     * @param  {string}   str2  右侧的字符串
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    EscPosEncoder.prototype.oneLine = function (str1, str2) {
+        var spaceNum = 32 - this.getStrWidth(str1) - this.getStrWidth(str2);
+        this.line(str1 + ' '.repeat(spaceNum) + str2);
+        return this;
+    };
+    /**
      * Underline text
      *
      * @param  {boolean|number}   value  true to turn on underline, false to turn off, or 2 for double underline
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.underline = function (value) {
@@ -210,7 +315,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Italic text
      *
      * @param  {boolean}          value  true to turn on italic, false to turn off
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.italic = function (value) {
@@ -227,7 +332,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Bold text
      *
      * @param  {boolean}          value  true to turn on bold, false to turn off, or 2 for double underline
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.bold = function (value) {
@@ -244,7 +349,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Change text size
      *
      * @param  {number}          value   small or normal
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.size = function (value) {
@@ -287,7 +392,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Change text alignment
      *
      * @param  {string}          value   left, center or right
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.align = function (value) {
@@ -312,7 +417,7 @@ var EscPosEncoder = /** @class */ (function () {
      * @param  {string}           value  the value of the barcode
      * @param  {string}           symbology  the type of the barcode
      * @param  {number}           height  height of the barcode
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.barcode = function (value, symbology, height) {
@@ -347,7 +452,7 @@ var EscPosEncoder = /** @class */ (function () {
      * @param  {number}           model  model of the qrcode, either 1 or 2
      * @param  {number}           size   size of the qrcode, a value between 1 and 8
      * @param  {string}           errorlevel  the amount of error correction used, either 'l', 'm', 'q', 'h'
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.qrcode = function (value, model, size, errorlevel) {
@@ -418,7 +523,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Cut paper
      *
      * @param  {string}          value   full or partial. When not specified a full cut will be assumed
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.cut = function (value) {
@@ -435,7 +540,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Add raw printer commands
      *
      * @param  {Array}           data   raw bytes to be included
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.raw = function (data) {

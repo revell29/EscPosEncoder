@@ -13,7 +13,7 @@ export default class EscPosEncoder {
     private _codepage
     private _state
     /**
-     * Create a new object
+     * Create a new EscPosEncoder
      *
      */
     constructor() {
@@ -21,7 +21,7 @@ export default class EscPosEncoder {
     }
 
     /**
-     * Reset the state of the object
+     * Reset the state of the EscPosEncoder
      *
      */
     private _reset(): void {
@@ -40,10 +40,10 @@ export default class EscPosEncoder {
      * Encode a string with the current code page
      *
      * @param  {string}   value  String to encode
-     * @returns {object}          Encoded string as a ArrayBuffer
+     * @returns {Buffer}          Encoded string as a ArrayBuffer
      *
      */
-    private _encode(value: string): object {
+    private _encode(value: string): Buffer {
       return iconv.encode(value, this._codepage);
     }
 
@@ -58,12 +58,66 @@ export default class EscPosEncoder {
     }
 
     /**
+     * 获取单个字符的字节数，也就是打印占宽
+     *
+     * @param  {string}   char  需要被分割的字符串
+     * @returns {number} 返回字节数（占宽）
+     */
+    private getCharLength(char: string): number {
+      let length;
+      // eslint-disable-next-line no-control-regex
+      if (/^[\x00-\xff]$/.test(char)) {
+        length = 1;
+      } else {
+        length = 2;
+      }
+      return length;
+    }
+
+    /**
+     * 根据打印宽度分割字符串
+     *
+     * @param  {string}   str  需要被分割的字符串
+     * @param  {number}   maxLength  分割长度
+     * @returns {Array} 返回被分割的字符串数组
+     */
+    private splitByWidth(str: string, maxLength: number): string[] {
+      let width = 0;
+      let result: string[] = [];
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charAt(i);
+        width += this.getCharLength(char);
+        if (width > maxLength) {
+          result.push(str.slice(0, i));
+          result = result.concat(this.splitByWidth(str.slice(i), maxLength));
+          return result;
+        }
+      }
+      return [str];
+    }
+
+    /**
+     * 计算字符串的字节长度，也就是打印的宽度
+     *
+     * @param  {string}   str  需要计算的字符串
+     * @returns {number} 返回被分割的字符串数组
+     */
+    private getStrWidth(str: string): number {
+      let width = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charAt(i);
+        width += this.getCharLength(char);
+      }
+      return width;
+    }
+
+    /**
      * Initialize the printer
      *
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
-    initialize(): object {
+    initialize(): EscPosEncoder {
       this._queue([
         0x1b, 0x40,
       ]);
@@ -72,13 +126,52 @@ export default class EscPosEncoder {
     }
 
     /**
-     * Initialize the printer
+     * 打印一行字符
      *
-     * @param {string} a dddd
-     * @returns {object}          Return the object, for easy chaining commands
+     * @param {string} char 打印成行的字符
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printLine(a: string): object {
-      console.log(a);
+    printLine(char: string): EscPosEncoder {
+      char = char.slice(0, 1);
+      this.line(char.repeat(32));
+      return this;
+    }
+
+    /**
+     * 打印空行
+     *
+     * @param {number} num 行数
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    emptyLine(num=1): EscPosEncoder {
+      for (let i = 0; i < num; i++) {
+        this.line('');
+      }
+      return this;
+    }
+
+    /**
+     * 打印菜品
+     *
+     * @param {Array} dishes 菜品信息数组
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    printDishs(dishes: {name: string; count: number; price: number}[]): EscPosEncoder {
+      const getCountAndPriceStr = (count: number, price: number): string => {
+        const countStr = '*' + count;
+        const spaceNum = 10 - this.getStrWidth(countStr) - this.getStrWidth(String(price));
+        return countStr + ' '.repeat(spaceNum) + String(price);
+      };
+      dishes.forEach((dish) => {
+        const fixedWidthStrArr = this.splitByWidth(dish.name, 18);
+        fixedWidthStrArr.forEach((str, index) => {
+          if (index === 0) {
+            this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+          } else {
+            this.line(str);
+          }
+        });
+      });
       return this;
     }
 
@@ -86,10 +179,10 @@ export default class EscPosEncoder {
      * Change the code page
      *
      * @param  {string}   value  The codepage that we set the printer to
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
-    codepage(value: string): object {
+    codepage(value: string): EscPosEncoder {
       const codepages = {
         'cp437': [0x00, false],
         'cp737': [0x40, false],
@@ -159,10 +252,10 @@ export default class EscPosEncoder {
      *
      * @param  {string}   value  Text that needs to be printed
      * @param  {number}   wrap   Wrap text after this many positions
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
-    text(value: string, wrap?: number): object {
+    text(value: string, wrap?: number): EscPosEncoder {
       if (wrap) {
         const w = linewrap(wrap, {lineBreak: '\r\n'});
         value = w(value);
@@ -186,10 +279,10 @@ export default class EscPosEncoder {
     /**
      * Print a newline
      *
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
-    newline(): object {
+    newline(): EscPosEncoder {
       this._queue([
         0x0a, 0x0d,
       ]);
@@ -202,10 +295,10 @@ export default class EscPosEncoder {
      *
      * @param  {string}   value  Text that needs to be printed
      * @param  {number}   wrap   Wrap text after this many positions
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
-    line(value: string, wrap?: number): object {
+    line(value: string, wrap?: number): EscPosEncoder {
       this.text(value, wrap);
       this.newline();
 
@@ -213,13 +306,27 @@ export default class EscPosEncoder {
     }
 
     /**
+     * 打印两个字符分别在纸的左右两侧
+     *
+     * @param  {string}   str1  左侧的字符串
+     * @param  {string}   str2  右侧的字符串
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    oneLine(str1: string, str2: string): EscPosEncoder {
+      const spaceNum = 32 - this.getStrWidth(str1) - this.getStrWidth(str2);
+      this.line(str1 + ' '.repeat(spaceNum) + str2);
+      return this;
+    }
+
+    /**
      * Underline text
      *
      * @param  {boolean|number}   value  true to turn on underline, false to turn off, or 2 for double underline
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    underline(value: boolean | number): object {
+    underline(value: boolean | number): EscPosEncoder {
       if (typeof value === 'undefined') {
         value = !this._state.underline;
       }
@@ -237,10 +344,10 @@ export default class EscPosEncoder {
      * Italic text
      *
      * @param  {boolean}          value  true to turn on italic, false to turn off
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    italic(value: boolean): object {
+    italic(value: boolean): EscPosEncoder {
       if (typeof value === 'undefined') {
         value = !this._state.italic;
       }
@@ -258,10 +365,10 @@ export default class EscPosEncoder {
      * Bold text
      *
      * @param  {boolean}          value  true to turn on bold, false to turn off, or 2 for double underline
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    bold(value: boolean): object {
+    bold(value: boolean): EscPosEncoder {
       if (typeof value === 'undefined') {
         value = !this._state.bold;
       }
@@ -279,10 +386,10 @@ export default class EscPosEncoder {
      * Change text size
      *
      * @param  {number}          value   small or normal
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    size(value: number): object {
+    size(value: number): EscPosEncoder {
       let realSize = 0;
       switch (value) {
         case 0:
@@ -325,10 +432,10 @@ export default class EscPosEncoder {
      * Change text alignment
      *
      * @param  {string}          value   left, center or right
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    align(value: string): object {
+    align(value: string): EscPosEncoder {
       const alignments = {
         'left': 0x00,
         'center': 0x01,
@@ -352,10 +459,10 @@ export default class EscPosEncoder {
      * @param  {string}           value  the value of the barcode
      * @param  {string}           symbology  the type of the barcode
      * @param  {number}           height  height of the barcode
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    barcode(value: string, symbology: string, height: number): object {
+    barcode(value: string, symbology: string, height: number): EscPosEncoder {
       const symbologies = {
         'upca': 0x00,
         'upce': 0x01,
@@ -390,10 +497,10 @@ export default class EscPosEncoder {
      * @param  {number}           model  model of the qrcode, either 1 or 2
      * @param  {number}           size   size of the qrcode, a value between 1 and 8
      * @param  {string}           errorlevel  the amount of error correction used, either 'l', 'm', 'q', 'h'
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    qrcode(value: string, model: number, size: number, errorlevel: string): object {
+    qrcode(value: string, model: number, size: number, errorlevel: string): EscPosEncoder {
       /* Force printing the print buffer and moving to a new line */
 
       this._queue([
@@ -480,10 +587,10 @@ export default class EscPosEncoder {
      * Cut paper
      *
      * @param  {string}          value   full or partial. When not specified a full cut will be assumed
-     * @returns {object}                  Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    cut(value: string): object {
+    cut(value: string): EscPosEncoder {
       let data = 0x00;
 
       if (value == 'partial') {
@@ -501,10 +608,10 @@ export default class EscPosEncoder {
      * Add raw printer commands
      *
      * @param  {Array}           data   raw bytes to be included
-     * @returns {object}          Return the object, for easy chaining commands
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
      *
      */
-    raw(data: Array<number>): object {
+    raw(data: Array<number>): EscPosEncoder {
       this._queue(data);
 
       return this;
