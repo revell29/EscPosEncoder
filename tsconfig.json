@@ -6,7 +6,7 @@
       "removeComments": false,
       "preserveConstEnums": false,
       "sourceMap": false,
-      "allowSyntheticDefaultImports":true,
+      "allowSyntheticDefaultImports":false,
       "outDir": "./dist",
     },
     "include": ["src/**/*"],

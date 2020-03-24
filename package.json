@@ -7,10 +7,10 @@
   "scripts": {
     "bundle": "browserify dist/esc-pos-encoder.js --standalone EscPosEncoder -o dist/esc-pos-encoder.js",
     "uglify": "uglifyjs dist/esc-pos-encoder.js -cm --overwrite -o dist/esc-pos-encoder.js",
-    "build": "tsc && npm run bundle",
-    "lint": "eslint --fix src/esc-pos-encoder.js",
+    "build": "npm run lint && tsc && npm run bundle && npm run test",
+    "lint": "eslint --fix src/esc-pos-encoder.ts",
     "mocha": "mocha test/",
-    "test": "npm run lint && npm run mocha",
+    "test": "npm run mocha",
     "publish": "npm run build && npm publish --access public"
   },
   "repository": {
@@ -25,12 +25,16 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^11.15.7",
+    "@types/node": "^13.9.3",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
     "browserify": "^14.5.0",
     "chai": "^4.1.2",
-    "eslint": "^4.11.0",
-    "eslint-config-google": "^0.9.1",
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-jsdoc": "^22.1.0",
     "mocha": "^4.0.1",
+    "typescript": "^3.8.3",
     "uglify-es": "^3.1.10"
   },
   "dependencies": {

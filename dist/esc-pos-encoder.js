@@ -10,14 +10,14 @@ var EscPosEncoder = /** @class */ (function () {
     /**
      * Create a new object
      *
-    */
+     */
     function EscPosEncoder() {
         this._reset();
     }
     /**
      * Reset the state of the object
      *
-    */
+     */
     EscPosEncoder.prototype._reset = function () {
         this._buffer = [];
         this._codepage = 'ascii';
@@ -32,18 +32,18 @@ var EscPosEncoder = /** @class */ (function () {
      * Encode a string with the current code page
      *
      * @param  {string}   value  String to encode
-     * @return {object}          Encoded string as a ArrayBuffer
+     * @returns {object}          Encoded string as a ArrayBuffer
      *
-    */
+     */
     EscPosEncoder.prototype._encode = function (value) {
         return iconv.encode(value, this._codepage);
     };
     /**
      * Add commands to the buffer
      *
-     * @param  {array}   value  And array of numbers, arrays, buffers or Uint8Arrays to add to the buffer
+     * @param  {Array}   value  And array of numbers, arrays, buffers or Uint8Arrays to add to the buffer
      *
-    */
+     */
     EscPosEncoder.prototype._queue = function (value) {
         var _this = this;
         value.forEach(function (item) { return _this._buffer.push(item); });
@@ -51,7 +51,7 @@ var EscPosEncoder = /** @class */ (function () {
     /**
      * Initialize the printer
      *
-     * @return {object}          Return the object, for easy chaining commands
+     * @returns {object}          Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.initialize = function () {
@@ -61,10 +61,20 @@ var EscPosEncoder = /** @class */ (function () {
         return this;
     };
     /**
+     * Initialize the printer
+     *
+     * @param {string} a dddd
+     * @returns {object}          Return the object, for easy chaining commands
+     */
+    EscPosEncoder.prototype.printLine = function (a) {
+        console.log(a);
+        return this;
+    };
+    /**
      * Change the code page
      *
      * @param  {string}   value  The codepage that we set the printer to
-     * @return {object}          Return the object, for easy chaining commands
+     * @returns {object}          Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.codepage = function (value) {
@@ -133,7 +143,7 @@ var EscPosEncoder = /** @class */ (function () {
      *
      * @param  {string}   value  Text that needs to be printed
      * @param  {number}   wrap   Wrap text after this many positions
-     * @return {object}          Return the object, for easy chaining commands
+     * @returns {object}          Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.text = function (value, wrap) {
@@ -157,7 +167,7 @@ var EscPosEncoder = /** @class */ (function () {
     /**
      * Print a newline
      *
-     * @return {object}          Return the object, for easy chaining commands
+     * @returns {object}          Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.newline = function () {
@@ -171,7 +181,7 @@ var EscPosEncoder = /** @class */ (function () {
      *
      * @param  {string}   value  Text that needs to be printed
      * @param  {number}   wrap   Wrap text after this many positions
-     * @return {object}          Return the object, for easy chaining commands
+     * @returns {object}          Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.line = function (value, wrap) {
@@ -183,7 +193,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Underline text
      *
      * @param  {boolean|number}   value  true to turn on underline, false to turn off, or 2 for double underline
-     * @return {object}                  Return the object, for easy chaining commands
+     * @returns {object}                  Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.underline = function (value) {
@@ -200,7 +210,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Italic text
      *
      * @param  {boolean}          value  true to turn on italic, false to turn off
-     * @return {object}                  Return the object, for easy chaining commands
+     * @returns {object}                  Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.italic = function (value) {
@@ -217,7 +227,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Bold text
      *
      * @param  {boolean}          value  true to turn on bold, false to turn off, or 2 for double underline
-     * @return {object}                  Return the object, for easy chaining commands
+     * @returns {object}                  Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.bold = function (value) {
@@ -231,12 +241,12 @@ var EscPosEncoder = /** @class */ (function () {
         return this;
     };
     /**
-      * Change text size
-      *
-      * @param  {string}          value   small or normal
-      * @return {object}                  Return the object, for easy chaining commands
-      *
-      */
+     * Change text size
+     *
+     * @param  {number}          value   small or normal
+     * @returns {object}                  Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.size = function (value) {
         var realSize = 0;
         switch (value) {
@@ -274,12 +284,12 @@ var EscPosEncoder = /** @class */ (function () {
         return this;
     };
     /**
-      * Change text alignment
-      *
-      * @param  {string}          value   left, center or right
-      * @return {object}                  Return the object, for easy chaining commands
-      *
-      */
+     * Change text alignment
+     *
+     * @param  {string}          value   left, center or right
+     * @returns {object}                  Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.align = function (value) {
         var alignments = {
             'left': 0x00,
@@ -302,7 +312,7 @@ var EscPosEncoder = /** @class */ (function () {
      * @param  {string}           value  the value of the barcode
      * @param  {string}           symbology  the type of the barcode
      * @param  {number}           height  height of the barcode
-     * @return {object}                  Return the object, for easy chaining commands
+     * @returns {object}                  Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.barcode = function (value, symbology, height) {
@@ -337,7 +347,7 @@ var EscPosEncoder = /** @class */ (function () {
      * @param  {number}           model  model of the qrcode, either 1 or 2
      * @param  {number}           size   size of the qrcode, a value between 1 and 8
      * @param  {string}           errorlevel  the amount of error correction used, either 'l', 'm', 'q', 'h'
-     * @return {object}                  Return the object, for easy chaining commands
+     * @returns {object}                  Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.qrcode = function (value, model, size, errorlevel) {
@@ -408,7 +418,7 @@ var EscPosEncoder = /** @class */ (function () {
      * Cut paper
      *
      * @param  {string}          value   full or partial. When not specified a full cut will be assumed
-     * @return {object}                  Return the object, for easy chaining commands
+     * @returns {object}                  Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.cut = function (value) {
@@ -424,8 +434,8 @@ var EscPosEncoder = /** @class */ (function () {
     /**
      * Add raw printer commands
      *
-     * @param  {array}           data   raw bytes to be included
-     * @return {object}          Return the object, for easy chaining commands
+     * @param  {Array}           data   raw bytes to be included
+     * @returns {object}          Return the object, for easy chaining commands
      *
      */
     EscPosEncoder.prototype.raw = function (data) {
@@ -435,7 +445,7 @@ var EscPosEncoder = /** @class */ (function () {
     /**
      * Encode all previous commands
      *
-     * @return {Uint8Array}         Return the encoded bytes
+     * @returns {Uint8Array}         Return the encoded bytes
      *
      */
     EscPosEncoder.prototype.encode = function () {
