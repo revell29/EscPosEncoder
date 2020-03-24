@@ -1,6 +1,6 @@
 {
   "name": "@freedom_sky/esc-pos-encoder",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Create a set of commands that can be send to any receipt printer that supports ESC/POS",
   "main": "dist/esc-pos-encoder.js",
   "types": "dist/esc-pos-encoder.d.ts",
@@ -11,7 +11,7 @@
     "lint": "eslint --fix src/esc-pos-encoder.js",
     "mocha": "mocha test/",
     "test": "npm run lint && npm run mocha",
-    "publish": "npm publish --access public"
+    "publish": "npm run build && npm publish --access public"
   },
   "repository": {
     "type": "git",

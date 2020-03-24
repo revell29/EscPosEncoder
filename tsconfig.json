@@ -3,7 +3,7 @@
       "module": "commonjs",
       "declaration": true,
       "noImplicitAny": false,
-      "removeComments": true,
+      "removeComments": false,
       "preserveConstEnums": false,
       "sourceMap": false,
       "allowSyntheticDefaultImports":true,

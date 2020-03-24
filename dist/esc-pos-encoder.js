@@ -3,10 +3,21 @@
 exports.__esModule = true;
 var iconv = require("iconv-lite");
 var linewrap = require("linewrap");
-var EscPosEncoder = (function () {
+/**
+ * Create a byte stream based on commands for ESC/POS printers
+ */
+var EscPosEncoder = /** @class */ (function () {
+    /**
+     * Create a new object
+     *
+    */
     function EscPosEncoder() {
         this._reset();
     }
+    /**
+     * Reset the state of the object
+     *
+    */
     EscPosEncoder.prototype._reset = function () {
         this._buffer = [];
         this._codepage = 'ascii';
@@ -17,19 +28,45 @@ var EscPosEncoder = (function () {
             'hanzi': false
         };
     };
+    /**
+     * Encode a string with the current code page
+     *
+     * @param  {string}   value  String to encode
+     * @return {object}          Encoded string as a ArrayBuffer
+     *
+    */
     EscPosEncoder.prototype._encode = function (value) {
         return iconv.encode(value, this._codepage);
     };
+    /**
+     * Add commands to the buffer
+     *
+     * @param  {array}   value  And array of numbers, arrays, buffers or Uint8Arrays to add to the buffer
+     *
+    */
     EscPosEncoder.prototype._queue = function (value) {
         var _this = this;
         value.forEach(function (item) { return _this._buffer.push(item); });
     };
+    /**
+     * Initialize the printer
+     *
+     * @return {object}          Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.initialize = function () {
         this._queue([
             0x1b, 0x40,
         ]);
         return this;
     };
+    /**
+     * Change the code page
+     *
+     * @param  {string}   value  The codepage that we set the printer to
+     * @return {object}          Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.codepage = function (value) {
         var codepages = {
             'cp437': [0x00, false],
@@ -91,6 +128,14 @@ var EscPosEncoder = (function () {
         }
         return this;
     };
+    /**
+     * Print text
+     *
+     * @param  {string}   value  Text that needs to be printed
+     * @param  {number}   wrap   Wrap text after this many positions
+     * @return {object}          Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.text = function (value, wrap) {
         if (wrap) {
             var w = linewrap(wrap, { lineBreak: '\r\n' });
@@ -109,17 +154,38 @@ var EscPosEncoder = (function () {
         }
         return this;
     };
+    /**
+     * Print a newline
+     *
+     * @return {object}          Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.newline = function () {
         this._queue([
             0x0a, 0x0d,
         ]);
         return this;
     };
+    /**
+     * Print text, followed by a newline
+     *
+     * @param  {string}   value  Text that needs to be printed
+     * @param  {number}   wrap   Wrap text after this many positions
+     * @return {object}          Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.line = function (value, wrap) {
         this.text(value, wrap);
         this.newline();
         return this;
     };
+    /**
+     * Underline text
+     *
+     * @param  {boolean|number}   value  true to turn on underline, false to turn off, or 2 for double underline
+     * @return {object}                  Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.underline = function (value) {
         if (typeof value === 'undefined') {
             value = !this._state.underline;
@@ -130,6 +196,13 @@ var EscPosEncoder = (function () {
         ]);
         return this;
     };
+    /**
+     * Italic text
+     *
+     * @param  {boolean}          value  true to turn on italic, false to turn off
+     * @return {object}                  Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.italic = function (value) {
         if (typeof value === 'undefined') {
             value = !this._state.italic;
@@ -140,6 +213,13 @@ var EscPosEncoder = (function () {
         ]);
         return this;
     };
+    /**
+     * Bold text
+     *
+     * @param  {boolean}          value  true to turn on bold, false to turn off, or 2 for double underline
+     * @return {object}                  Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.bold = function (value) {
         if (typeof value === 'undefined') {
             value = !this._state.bold;
@@ -150,6 +230,13 @@ var EscPosEncoder = (function () {
         ]);
         return this;
     };
+    /**
+      * Change text size
+      *
+      * @param  {string}          value   small or normal
+      * @return {object}                  Return the object, for easy chaining commands
+      *
+      */
     EscPosEncoder.prototype.size = function (value) {
         var realSize = 0;
         switch (value) {
@@ -186,6 +273,13 @@ var EscPosEncoder = (function () {
         ]);
         return this;
     };
+    /**
+      * Change text alignment
+      *
+      * @param  {string}          value   left, center or right
+      * @return {object}                  Return the object, for easy chaining commands
+      *
+      */
     EscPosEncoder.prototype.align = function (value) {
         var alignments = {
             'left': 0x00,
@@ -202,6 +296,15 @@ var EscPosEncoder = (function () {
         }
         return this;
     };
+    /**
+     * Barcode
+     *
+     * @param  {string}           value  the value of the barcode
+     * @param  {string}           symbology  the type of the barcode
+     * @param  {number}           height  height of the barcode
+     * @return {object}                  Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.barcode = function (value, symbology, height) {
         var symbologies = {
             'upca': 0x00,
@@ -227,10 +330,22 @@ var EscPosEncoder = (function () {
         }
         return this;
     };
+    /**
+     * QR code
+     *
+     * @param  {string}           value  the value of the qr code
+     * @param  {number}           model  model of the qrcode, either 1 or 2
+     * @param  {number}           size   size of the qrcode, a value between 1 and 8
+     * @param  {string}           errorlevel  the amount of error correction used, either 'l', 'm', 'q', 'h'
+     * @return {object}                  Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.qrcode = function (value, model, size, errorlevel) {
+        /* Force printing the print buffer and moving to a new line */
         this._queue([
             0x0a,
         ]);
+        /* Model */
         var models = {
             1: 0x31,
             2: 0x32
@@ -246,6 +361,7 @@ var EscPosEncoder = (function () {
         else {
             throw new Error('Model must be 1 or 2');
         }
+        /* Size */
         if (typeof size === 'undefined') {
             size = 6;
         }
@@ -258,6 +374,7 @@ var EscPosEncoder = (function () {
         this._queue([
             0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, size,
         ]);
+        /* Error level */
         var errorlevels = {
             'l': 0x30,
             'm': 0x31,
@@ -275,16 +392,25 @@ var EscPosEncoder = (function () {
         else {
             throw new Error('Error level must be l, m, q or h');
         }
+        /* Data */
         var bytes = iconv.encode(value, 'iso88591');
         var length = bytes.length + 3;
         this._queue([
             0x1d, 0x28, 0x6b, length % 0xff, length / 0xff, 0x31, 0x50, 0x30, bytes,
         ]);
+        /* Print QR code */
         this._queue([
             0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x51, 0x30,
         ]);
         return this;
     };
+    /**
+     * Cut paper
+     *
+     * @param  {string}          value   full or partial. When not specified a full cut will be assumed
+     * @return {object}                  Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.cut = function (value) {
         var data = 0x00;
         if (value == 'partial') {
@@ -295,10 +421,23 @@ var EscPosEncoder = (function () {
         ]);
         return this;
     };
+    /**
+     * Add raw printer commands
+     *
+     * @param  {array}           data   raw bytes to be included
+     * @return {object}          Return the object, for easy chaining commands
+     *
+     */
     EscPosEncoder.prototype.raw = function (data) {
         this._queue(data);
         return this;
     };
+    /**
+     * Encode all previous commands
+     *
+     * @return {Uint8Array}         Return the encoded bytes
+     *
+     */
     EscPosEncoder.prototype.encode = function () {
         var length = 0;
         this._buffer.forEach(function (item) {
