@@ -1,6 +1,10 @@
 declare module 'iconv-lite' {
     const encodings: Array<string>;
 }
+declare enum PrinterType {
+    '_58' = 58,
+    '_80' = 80
+}
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
@@ -8,6 +12,9 @@ export default class EscPosEncoder {
     private _buffer;
     private _codepage;
     private _state;
+    private _58printerParam;
+    private _80printerParam;
+    private _printerParam;
     /**
      * Create a new EscPosEncoder
      *
@@ -62,6 +69,13 @@ export default class EscPosEncoder {
      *
      */
     initialize(): EscPosEncoder;
+    /**
+     * 设置打印机宽度
+     *
+     * @param  {PrinterType}   type  需要被分割的字符串
+     * @returns {EscPosEncoder} 返回this
+     */
+    setPinterType(type: PrinterType): EscPosEncoder;
     /**
      * 打印一行字符
      *
@@ -193,11 +207,17 @@ export default class EscPosEncoder {
     /**
      * Cut paper
      *
-     * @param  {string}          value   full or partial. When not specified a full cut will be assumed
      * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    cut(value: string): EscPosEncoder;
+    cut(): EscPosEncoder;
+    /**
+     * Cut paper partial
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    cutPartial(): EscPosEncoder;
     /**
      * Add raw printer commands
      *
@@ -214,3 +234,4 @@ export default class EscPosEncoder {
      */
     encode(): Uint8Array;
 }
+export {};

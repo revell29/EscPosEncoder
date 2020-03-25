@@ -5,6 +5,17 @@ declare module 'iconv-lite' {
     export const encodings: Array<string>;
 }
 
+interface PrinterParam {
+  width: number;
+  singleCharLength: number;
+  doubleCharLength: number;
+}
+
+enum PrinterType {
+  '_58' = 58,
+  '_80' = 80,
+}
+
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
@@ -12,6 +23,17 @@ export default class EscPosEncoder {
     private _buffer
     private _codepage
     private _state
+    private _58printerParam: PrinterParam = {
+      width: 380,
+      singleCharLength: 31,
+      doubleCharLength: 15,
+    }
+    private _80printerParam: PrinterParam = {
+      width: 500,
+      singleCharLength: 47,
+      doubleCharLength: 23,
+    }
+    private _printerParam: PrinterParam
     /**
      * Create a new EscPosEncoder
      *
@@ -27,6 +49,7 @@ export default class EscPosEncoder {
     private _reset(): void {
       this._buffer = [];
       this._codepage = 'ascii';
+      this._printerParam = this._58printerParam;
 
       this._state = {
         'bold': false,
@@ -126,6 +149,21 @@ export default class EscPosEncoder {
     }
 
     /**
+     * 设置打印机宽度
+     *
+     * @param  {PrinterType}   type  需要被分割的字符串
+     * @returns {EscPosEncoder} 返回this
+     */
+    setPinterType(type: PrinterType): EscPosEncoder {
+      if (type===PrinterType._58) {
+        this._printerParam = this._58printerParam;
+      } else if (type===PrinterType._80) {
+        this._printerParam = this._80printerParam;
+      }
+      return this;
+    }
+
+    /**
      * 打印一行字符
      *
      * @param {string} char 打印成行的字符
@@ -133,7 +171,7 @@ export default class EscPosEncoder {
      */
     printLine(char: string): EscPosEncoder {
       char = char.slice(0, 1);
-      this.line(char.repeat(32));
+      this.line(char.repeat(this._printerParam.singleCharLength));
       return this;
     }
 
@@ -157,13 +195,17 @@ export default class EscPosEncoder {
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
     printDishs(dishes: {name: string; count: number; price: number}[]): EscPosEncoder {
+      const countAndPriceLength = 10; // 价格和个数的长度
       const getCountAndPriceStr = (count: number, price: number): string => {
         const countStr = '*' + count;
-        const spaceNum = 10 - this.getStrWidth(countStr) - this.getStrWidth(String(price));
+        const spaceNum = countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(String(price));
         return countStr + ' '.repeat(spaceNum) + String(price);
       };
       dishes.forEach((dish) => {
-        const fixedWidthStrArr = this.splitByWidth(dish.name, 18);
+        const fixedWidthStrArr = this.splitByWidth(
+            dish.name,
+            this._printerParam.singleCharLength-countAndPriceLength-3
+        );
         fixedWidthStrArr.forEach((str, index) => {
           if (index === 0) {
             this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
@@ -314,7 +356,7 @@ export default class EscPosEncoder {
      *
      */
     oneLine(str1: string, str2: string): EscPosEncoder {
-      const spaceNum = 32 - this.getStrWidth(str1) - this.getStrWidth(str2);
+      const spaceNum = this._printerParam.singleCharLength - this.getStrWidth(str1) - this.getStrWidth(str2);
       this.line(str1 + ' '.repeat(spaceNum) + str2);
       return this;
     }
@@ -586,19 +628,26 @@ export default class EscPosEncoder {
     /**
      * Cut paper
      *
-     * @param  {string}          value   full or partial. When not specified a full cut will be assumed
      * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    cut(value: string): EscPosEncoder {
-      let data = 0x00;
-
-      if (value == 'partial') {
-        data = 0x01;
-      }
-
+    cut(): EscPosEncoder {
       this._queue([
-        0x1b, 0x56, data,
+        0x1d, 0x56, 0x41, 0x00,
+      ]);
+
+      return this;
+    }
+
+    /**
+     * Cut paper partial
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    cutPartial(): EscPosEncoder {
+      this._queue([
+        0x1d, 0x56, 0x42, 0x00,
       ]);
 
       return this;

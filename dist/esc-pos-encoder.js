@@ -3,6 +3,11 @@
 exports.__esModule = true;
 var iconv = require("iconv-lite");
 var linewrap = require("linewrap");
+var PrinterType;
+(function (PrinterType) {
+    PrinterType[PrinterType["_58"] = 58] = "_58";
+    PrinterType[PrinterType["_80"] = 80] = "_80";
+})(PrinterType || (PrinterType = {}));
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
@@ -12,6 +17,16 @@ var EscPosEncoder = /** @class */ (function () {
      *
      */
     function EscPosEncoder() {
+        this._58printerParam = {
+            width: 380,
+            singleCharLength: 31,
+            doubleCharLength: 15
+        };
+        this._80printerParam = {
+            width: 500,
+            singleCharLength: 47,
+            doubleCharLength: 23
+        };
         this._reset();
     }
     /**
@@ -21,6 +36,7 @@ var EscPosEncoder = /** @class */ (function () {
     EscPosEncoder.prototype._reset = function () {
         this._buffer = [];
         this._codepage = 'ascii';
+        this._printerParam = this._58printerParam;
         this._state = {
             'bold': false,
             'italic': false,
@@ -113,6 +129,21 @@ var EscPosEncoder = /** @class */ (function () {
         return this;
     };
     /**
+     * 设置打印机宽度
+     *
+     * @param  {PrinterType}   type  需要被分割的字符串
+     * @returns {EscPosEncoder} 返回this
+     */
+    EscPosEncoder.prototype.setPinterType = function (type) {
+        if (type === PrinterType._58) {
+            this._printerParam = this._58printerParam;
+        }
+        else if (type === PrinterType._80) {
+            this._printerParam = this._80printerParam;
+        }
+        return this;
+    };
+    /**
      * 打印一行字符
      *
      * @param {string} char 打印成行的字符
@@ -120,7 +151,7 @@ var EscPosEncoder = /** @class */ (function () {
      */
     EscPosEncoder.prototype.printLine = function (char) {
         char = char.slice(0, 1);
-        this.line(char.repeat(32));
+        this.line(char.repeat(this._printerParam.singleCharLength));
         return this;
     };
     /**
@@ -144,13 +175,14 @@ var EscPosEncoder = /** @class */ (function () {
      */
     EscPosEncoder.prototype.printDishs = function (dishes) {
         var _this = this;
+        var countAndPriceLength = 10; // 价格和个数的长度
         var getCountAndPriceStr = function (count, price) {
             var countStr = '*' + count;
-            var spaceNum = 10 - _this.getStrWidth(countStr) - _this.getStrWidth(String(price));
+            var spaceNum = countAndPriceLength - _this.getStrWidth(countStr) - _this.getStrWidth(String(price));
             return countStr + ' '.repeat(spaceNum) + String(price);
         };
         dishes.forEach(function (dish) {
-            var fixedWidthStrArr = _this.splitByWidth(dish.name, 18);
+            var fixedWidthStrArr = _this.splitByWidth(dish.name, _this._printerParam.singleCharLength - countAndPriceLength - 3);
             fixedWidthStrArr.forEach(function (str, index) {
                 if (index === 0) {
                     _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
@@ -290,7 +322,7 @@ var EscPosEncoder = /** @class */ (function () {
      *
      */
     EscPosEncoder.prototype.oneLine = function (str1, str2) {
-        var spaceNum = 32 - this.getStrWidth(str1) - this.getStrWidth(str2);
+        var spaceNum = this._printerParam.singleCharLength - this.getStrWidth(str1) - this.getStrWidth(str2);
         this.line(str1 + ' '.repeat(spaceNum) + str2);
         return this;
     };
@@ -522,17 +554,24 @@ var EscPosEncoder = /** @class */ (function () {
     /**
      * Cut paper
      *
-     * @param  {string}          value   full or partial. When not specified a full cut will be assumed
      * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
      *
      */
-    EscPosEncoder.prototype.cut = function (value) {
-        var data = 0x00;
-        if (value == 'partial') {
-            data = 0x01;
-        }
+    EscPosEncoder.prototype.cut = function () {
         this._queue([
-            0x1b, 0x56, data,
+            0x1d, 0x56, 0x41, 0x00,
+        ]);
+        return this;
+    };
+    /**
+     * Cut paper partial
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    EscPosEncoder.prototype.cutPartial = function () {
+        this._queue([
+            0x1d, 0x56, 0x42, 0x00,
         ]);
         return this;
     };
