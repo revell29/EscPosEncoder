@@ -11,7 +11,7 @@ interface PrinterParam {
   doubleCharLength: number;
 }
 
-enum PrinterType {
+export enum PrinterWidthEnum {
   '_58' = 58,
   '_80' = 80,
 }
@@ -151,13 +151,13 @@ export default class EscPosEncoder {
     /**
      * 设置打印机宽度
      *
-     * @param  {PrinterType}   type  需要被分割的字符串
+     * @param  {PrinterWidthEnum}   type  需要被分割的字符串
      * @returns {EscPosEncoder} 返回this
      */
-    setPinterType(type: PrinterType): EscPosEncoder {
-      if (type===PrinterType._58) {
+    setPinterType(type: PrinterWidthEnum): EscPosEncoder {
+      if (type===PrinterWidthEnum._58) {
         this._printerParam = this._58printerParam;
-      } else if (type===PrinterType._80) {
+      } else if (type===PrinterWidthEnum._80) {
         this._printerParam = this._80printerParam;
       }
       return this;
@@ -197,9 +197,10 @@ export default class EscPosEncoder {
     printDishs(dishes: {name: string; count: number; price: number}[]): EscPosEncoder {
       const countAndPriceLength = 10; // 价格和个数的长度
       const getCountAndPriceStr = (count: number, price: number): string => {
+        const priceStr = price.toFixed(2);
         const countStr = '*' + count;
-        const spaceNum = countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(String(price));
-        return countStr + ' '.repeat(spaceNum) + String(price);
+        const spaceNum = countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(priceStr);
+        return countStr + ' '.repeat(spaceNum) + priceStr;
       };
       dishes.forEach((dish) => {
         const fixedWidthStrArr = this.splitByWidth(

@@ -1,7 +1,7 @@
 declare module 'iconv-lite' {
     const encodings: Array<string>;
 }
-declare enum PrinterType {
+export declare enum PrinterWidthEnum {
     '_58' = 58,
     '_80' = 80
 }
@@ -72,10 +72,10 @@ export default class EscPosEncoder {
     /**
      * 设置打印机宽度
      *
-     * @param  {PrinterType}   type  需要被分割的字符串
+     * @param  {PrinterWidthEnum}   type  需要被分割的字符串
      * @returns {EscPosEncoder} 返回this
      */
-    setPinterType(type: PrinterType): EscPosEncoder;
+    setPinterType(type: PrinterWidthEnum): EscPosEncoder;
     /**
      * 打印一行字符
      *
@@ -234,4 +234,3 @@ export default class EscPosEncoder {
      */
     encode(): Uint8Array;
 }
-export {};

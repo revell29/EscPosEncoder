@@ -3,11 +3,11 @@
 exports.__esModule = true;
 var iconv = require("iconv-lite");
 var linewrap = require("linewrap");
-var PrinterType;
-(function (PrinterType) {
-    PrinterType[PrinterType["_58"] = 58] = "_58";
-    PrinterType[PrinterType["_80"] = 80] = "_80";
-})(PrinterType || (PrinterType = {}));
+var PrinterWidthEnum;
+(function (PrinterWidthEnum) {
+    PrinterWidthEnum[PrinterWidthEnum["_58"] = 58] = "_58";
+    PrinterWidthEnum[PrinterWidthEnum["_80"] = 80] = "_80";
+})(PrinterWidthEnum = exports.PrinterWidthEnum || (exports.PrinterWidthEnum = {}));
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
@@ -131,14 +131,14 @@ var EscPosEncoder = /** @class */ (function () {
     /**
      * 设置打印机宽度
      *
-     * @param  {PrinterType}   type  需要被分割的字符串
+     * @param  {PrinterWidthEnum}   type  需要被分割的字符串
      * @returns {EscPosEncoder} 返回this
      */
     EscPosEncoder.prototype.setPinterType = function (type) {
-        if (type === PrinterType._58) {
+        if (type === PrinterWidthEnum._58) {
             this._printerParam = this._58printerParam;
         }
-        else if (type === PrinterType._80) {
+        else if (type === PrinterWidthEnum._80) {
             this._printerParam = this._80printerParam;
         }
         return this;
@@ -177,9 +177,10 @@ var EscPosEncoder = /** @class */ (function () {
         var _this = this;
         var countAndPriceLength = 10; // 价格和个数的长度
         var getCountAndPriceStr = function (count, price) {
+            var priceStr = price.toFixed(2);
             var countStr = '*' + count;
-            var spaceNum = countAndPriceLength - _this.getStrWidth(countStr) - _this.getStrWidth(String(price));
-            return countStr + ' '.repeat(spaceNum) + String(price);
+            var spaceNum = countAndPriceLength - _this.getStrWidth(countStr) - _this.getStrWidth(priceStr);
+            return countStr + ' '.repeat(spaceNum) + priceStr;
         };
         dishes.forEach(function (dish) {
             var fixedWidthStrArr = _this.splitByWidth(dish.name, _this._printerParam.singleCharLength - countAndPriceLength - 3);
