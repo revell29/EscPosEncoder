@@ -189,15 +189,15 @@ export default class EscPosEncoder {
     }
 
     /**
-     * 打印菜品
+     * 前台打印菜品，包含菜品名称，数量，价格
      *
      * @param {Array} dishes 菜品信息数组
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printDishs(dishes: {name: string; count: number; price: number}[]): EscPosEncoder {
-      const countAndPriceLength = 10; // 价格和个数的长度
+    printFrontDeskDishs(dishes: {name: string; count: number; price: number}[]): EscPosEncoder {
+      const countAndPriceLength = 11; // 价格和个数的长度
       const getCountAndPriceStr = (count: number, price: number): string => {
-        const priceStr = price.toFixed(2);
+        const priceStr = (price*count).toFixed(2);
         const countStr = '*' + count;
         const spaceNum = countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(priceStr);
         return countStr + ' '.repeat(spaceNum) + priceStr;
@@ -210,6 +210,30 @@ export default class EscPosEncoder {
         fixedWidthStrArr.forEach((str, index) => {
           if (index === 0) {
             this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+          } else {
+            this.line(str);
+          }
+        });
+      });
+      return this;
+    }
+
+    /**
+     * 后厨打印菜品，包含菜品名称，数量，不包含价格
+     *
+     * @param {Array} dishes 菜品信息数组
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    printChefDishs(dishes: {name: string; count: number}[]): EscPosEncoder {
+      const countAndPriceLength = 6; // 价格和个数的长度
+      dishes.forEach((dish) => {
+        const fixedWidthStrArr = this.splitByWidth(
+            dish.name,
+            this._printerParam.singleCharLength-countAndPriceLength-3
+        );
+        fixedWidthStrArr.forEach((str, index) => {
+          if (index === 0) {
+            this.oneLine(str, `【*${dish.count}】`);
           } else {
             this.line(str);
           }

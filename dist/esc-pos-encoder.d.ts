@@ -91,15 +91,25 @@ export default class EscPosEncoder {
      */
     emptyLine(num?: number): EscPosEncoder;
     /**
-     * 打印菜品
+     * 前台打印菜品，包含菜品名称，数量，价格
      *
      * @param {Array} dishes 菜品信息数组
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printDishs(dishes: {
+    printFrontDeskDishs(dishes: {
         name: string;
         count: number;
         price: number;
+    }[]): EscPosEncoder;
+    /**
+     * 后厨打印菜品，包含菜品名称，数量，不包含价格
+     *
+     * @param {Array} dishes 菜品信息数组
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    printChefDishs(dishes: {
+        name: string;
+        count: number;
     }[]): EscPosEncoder;
     /**
      * Change the code page

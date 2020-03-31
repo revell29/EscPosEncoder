@@ -168,16 +168,16 @@ var EscPosEncoder = /** @class */ (function () {
         return this;
     };
     /**
-     * 打印菜品
+     * 前台打印菜品，包含菜品名称，数量，价格
      *
      * @param {Array} dishes 菜品信息数组
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    EscPosEncoder.prototype.printDishs = function (dishes) {
+    EscPosEncoder.prototype.printFrontDeskDishs = function (dishes) {
         var _this = this;
-        var countAndPriceLength = 10; // 价格和个数的长度
+        var countAndPriceLength = 11; // 价格和个数的长度
         var getCountAndPriceStr = function (count, price) {
-            var priceStr = price.toFixed(2);
+            var priceStr = (price * count).toFixed(2);
             var countStr = '*' + count;
             var spaceNum = countAndPriceLength - _this.getStrWidth(countStr) - _this.getStrWidth(priceStr);
             return countStr + ' '.repeat(spaceNum) + priceStr;
@@ -187,6 +187,28 @@ var EscPosEncoder = /** @class */ (function () {
             fixedWidthStrArr.forEach(function (str, index) {
                 if (index === 0) {
                     _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+                }
+                else {
+                    _this.line(str);
+                }
+            });
+        });
+        return this;
+    };
+    /**
+     * 后厨打印菜品，包含菜品名称，数量，不包含价格
+     *
+     * @param {Array} dishes 菜品信息数组
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    EscPosEncoder.prototype.printChefDishs = function (dishes) {
+        var _this = this;
+        var countAndPriceLength = 6; // 价格和个数的长度
+        dishes.forEach(function (dish) {
+            var fixedWidthStrArr = _this.splitByWidth(dish.name, _this._printerParam.singleCharLength - countAndPriceLength - 3);
+            fixedWidthStrArr.forEach(function (str, index) {
+                if (index === 0) {
+                    _this.oneLine(str, "\u3010*" + dish.count + "\u3011");
                 }
                 else {
                     _this.line(str);
