@@ -1,6 +1,6 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.EscPosEncoder = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var iconv = require("iconv-lite");
 var linewrap = require("linewrap");
 var PrinterWidthEnum;
@@ -17,18 +17,31 @@ var EscPosEncoder = /** @class */ (function () {
      *
      */
     function EscPosEncoder() {
+        this._size = 0;
         this._58printerParam = {
             width: 380,
             singleCharLength: 31,
-            doubleCharLength: 15
+            doubleCharLength: 15,
         };
         this._80printerParam = {
             width: 500,
             singleCharLength: 47,
-            doubleCharLength: 23
+            doubleCharLength: 23,
         };
         this._reset();
     }
+    Object.defineProperty(EscPosEncoder.prototype, "singleCharLengthPerLine", {
+        /**
+         * 返回每行的单字节长度
+         *
+         * @returns {number} 每行的单字节长度
+         */
+        get: function () {
+            return Math.floor(this._size === 2 ? this._printerParam.singleCharLength / 2 : this._printerParam.singleCharLength);
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Reset the state of the EscPosEncoder
      *
@@ -41,7 +54,7 @@ var EscPosEncoder = /** @class */ (function () {
             'bold': false,
             'italic': false,
             'underline': false,
-            'hanzi': false
+            'hanzi': false,
         };
     };
     /**
@@ -147,11 +160,24 @@ var EscPosEncoder = /** @class */ (function () {
      * 打印一行字符
      *
      * @param {string} char 打印成行的字符
+     * @param {string} message 提示信息
+     * @param {boolean} middle 提示信息显示在行间
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    EscPosEncoder.prototype.printLine = function (char) {
+    EscPosEncoder.prototype.printLine = function (char, message, middle) {
+        if (message === void 0) { message = ''; }
+        if (middle === void 0) { middle = false; }
         char = char.slice(0, 1);
-        this.line(char.repeat(this._printerParam.singleCharLength));
+        var restLength = this.singleCharLengthPerLine - this.getStrWidth(message);
+        if (middle) {
+            this.line(char.repeat(Math.floor(restLength / 2)) + message + char.repeat(Math.ceil(restLength / 2)));
+        }
+        else {
+            this.line(char.repeat(this.singleCharLengthPerLine));
+            if (message) {
+                this.line(' '.repeat(Math.floor(restLength / 2)) + message + ' '.repeat(Math.ceil(restLength / 2)));
+            }
+        }
         return this;
     };
     /**
@@ -171,19 +197,23 @@ var EscPosEncoder = /** @class */ (function () {
      * 前台打印菜品，包含菜品名称，数量，价格
      *
      * @param {Array} dishes 菜品信息数组
+     * @param {number} size 字体大小,默认1
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    EscPosEncoder.prototype.printFrontDeskDishs = function (dishes) {
+    EscPosEncoder.prototype.printFrontDeskDishs = function (dishes, size) {
         var _this = this;
-        var countAndPriceLength = 11; // 价格和个数的长度
+        if (size === void 0) { size = 1; }
+        var originSize = this._size;
+        var countAndPriceLength = 10; // 价格和个数的长度
         var getCountAndPriceStr = function (count, price) {
-            var priceStr = (price * count).toFixed(2);
-            var countStr = '*' + count;
+            var priceStr = price.toFixed(2);
+            var countStr = 'x' + count;
             var spaceNum = countAndPriceLength - _this.getStrWidth(countStr) - _this.getStrWidth(priceStr);
-            return countStr + ' '.repeat(spaceNum) + priceStr;
+            return countStr + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + priceStr;
         };
+        this.size(size);
         dishes.forEach(function (dish) {
-            var fixedWidthStrArr = _this.splitByWidth(dish.name, _this._printerParam.singleCharLength - countAndPriceLength - 3);
+            var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.singleCharLengthPerLine - countAndPriceLength - 2);
             fixedWidthStrArr.forEach(function (str, index) {
                 if (index === 0) {
                     _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
@@ -193,28 +223,34 @@ var EscPosEncoder = /** @class */ (function () {
                 }
             });
         });
+        this.size(originSize);
         return this;
     };
     /**
      * 后厨打印菜品，包含菜品名称，数量，不包含价格
      *
      * @param {Array} dishes 菜品信息数组
+     * @param {number} size 字体大小,默认2
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    EscPosEncoder.prototype.printChefDishs = function (dishes) {
+    EscPosEncoder.prototype.printChefDishs = function (dishes, size) {
         var _this = this;
-        var countAndPriceLength = 6; // 价格和个数的长度
+        if (size === void 0) { size = 2; }
+        var originSize = this._size;
+        var countAndPriceLength = 3; // 价格和个数的长度
+        this.size(size);
         dishes.forEach(function (dish) {
-            var fixedWidthStrArr = _this.splitByWidth(dish.name, _this._printerParam.singleCharLength - countAndPriceLength - 3);
+            var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.singleCharLengthPerLine - countAndPriceLength);
             fixedWidthStrArr.forEach(function (str, index) {
                 if (index === 0) {
-                    _this.oneLine(str, "\u3010*" + dish.count + "\u3011");
+                    _this.oneLine(str, "x" + dish.count);
                 }
                 else {
                     _this.line(str);
                 }
             });
         });
+        this.size(originSize);
         return this;
     };
     /**
@@ -256,7 +292,7 @@ var EscPosEncoder = /** @class */ (function () {
             'windows1255': [0x20, false],
             'windows1256': [0x5c, false],
             'windows1257': [0x19, false],
-            'windows1258': [0x5e, false]
+            'windows1258': [0x5e, false],
         };
         var codepage;
         if (!iconv.encodingExists(value)) {
@@ -345,8 +381,8 @@ var EscPosEncoder = /** @class */ (function () {
      *
      */
     EscPosEncoder.prototype.oneLine = function (str1, str2) {
-        var spaceNum = this._printerParam.singleCharLength - this.getStrWidth(str1) - this.getStrWidth(str2);
-        this.line(str1 + ' '.repeat(spaceNum) + str2);
+        var spaceNum = this.singleCharLengthPerLine - this.getStrWidth(str1) - this.getStrWidth(str2);
+        this.line(str1 + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + str2);
         return this;
     };
     /**
@@ -409,30 +445,16 @@ var EscPosEncoder = /** @class */ (function () {
      */
     EscPosEncoder.prototype.size = function (value) {
         var realSize = 0;
+        this._size = value;
         switch (value) {
-            case 0:
+            case 0: // 正常字体
                 realSize = 0;
                 break;
-            case 1:
+            case 1: // 高度加倍
+                realSize = 1;
+                break;
+            case 2: // 宽高都加倍
                 realSize = 17;
-                break;
-            case 2:
-                realSize = 34;
-                break;
-            case 3:
-                realSize = 51;
-                break;
-            case 4:
-                realSize = 68;
-                break;
-            case 5:
-                realSize = 85;
-                break;
-            case 6:
-                realSize = 102;
-                break;
-            case 7:
-                realSize = 119;
                 break;
         }
         this._queue([
@@ -454,7 +476,7 @@ var EscPosEncoder = /** @class */ (function () {
         var alignments = {
             'left': 0x00,
             'center': 0x01,
-            'right': 0x02
+            'right': 0x02,
         };
         if (value in alignments) {
             this._queue([
@@ -483,7 +505,7 @@ var EscPosEncoder = /** @class */ (function () {
             'ean8': 0x03,
             'coda39': 0x04,
             'itf': 0x05,
-            'codabar': 0x06
+            'codabar': 0x06,
         };
         if (symbology in symbologies) {
             var bytes = iconv.encode(value, 'ascii');
@@ -518,7 +540,7 @@ var EscPosEncoder = /** @class */ (function () {
         /* Model */
         var models = {
             1: 0x31,
-            2: 0x32
+            2: 0x32,
         };
         if (typeof model === 'undefined') {
             model = 2;
@@ -549,7 +571,7 @@ var EscPosEncoder = /** @class */ (function () {
             'l': 0x30,
             'm': 0x31,
             'q': 0x32,
-            'h': 0x33
+            'h': 0x33,
         };
         if (typeof errorlevel === 'undefined') {
             errorlevel = 'm';
@@ -642,7 +664,7 @@ var EscPosEncoder = /** @class */ (function () {
     };
     return EscPosEncoder;
 }());
-exports["default"] = EscPosEncoder;
+exports.default = EscPosEncoder;
 
 },{"iconv-lite":26,"linewrap":32}],2:[function(require,module,exports){
 'use strict'

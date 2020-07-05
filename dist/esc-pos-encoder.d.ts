@@ -12,9 +12,16 @@ export default class EscPosEncoder {
     private _buffer;
     private _codepage;
     private _state;
+    private _size;
     private _58printerParam;
     private _80printerParam;
     private _printerParam;
+    /**
+     * 返回每行的单字节长度
+     *
+     * @returns {number} 每行的单字节长度
+     */
+    private get singleCharLengthPerLine();
     /**
      * Create a new EscPosEncoder
      *
@@ -80,9 +87,11 @@ export default class EscPosEncoder {
      * 打印一行字符
      *
      * @param {string} char 打印成行的字符
+     * @param {string} message 提示信息
+     * @param {boolean} middle 提示信息显示在行间
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printLine(char: string): EscPosEncoder;
+    printLine(char: string, message?: string, middle?: boolean): EscPosEncoder;
     /**
      * 打印空行
      *
@@ -94,23 +103,25 @@ export default class EscPosEncoder {
      * 前台打印菜品，包含菜品名称，数量，价格
      *
      * @param {Array} dishes 菜品信息数组
+     * @param {number} size 字体大小,默认1
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
     printFrontDeskDishs(dishes: {
         name: string;
         count: number;
         price: number;
-    }[]): EscPosEncoder;
+    }[], size?: number): EscPosEncoder;
     /**
      * 后厨打印菜品，包含菜品名称，数量，不包含价格
      *
      * @param {Array} dishes 菜品信息数组
+     * @param {number} size 字体大小,默认2
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
     printChefDishs(dishes: {
         name: string;
         count: number;
-    }[]): EscPosEncoder;
+    }[], size?: number): EscPosEncoder;
     /**
      * Change the code page
      *

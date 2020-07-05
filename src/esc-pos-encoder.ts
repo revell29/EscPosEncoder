@@ -23,6 +23,7 @@ export default class EscPosEncoder {
     private _buffer
     private _codepage
     private _state
+    private _size = 0
     private _58printerParam: PrinterParam = {
       width: 380,
       singleCharLength: 31,
@@ -33,7 +34,18 @@ export default class EscPosEncoder {
       singleCharLength: 47,
       doubleCharLength: 23,
     }
+
     private _printerParam: PrinterParam
+
+    /**
+     * 返回每行的单字节长度
+     *
+     * @returns {number} 每行的单字节长度
+     */
+    private get singleCharLengthPerLine(): number {
+      return Math.floor(this._size===2?this._printerParam.singleCharLength/2:this._printerParam.singleCharLength);
+    }
+
     /**
      * Create a new EscPosEncoder
      *
@@ -167,11 +179,21 @@ export default class EscPosEncoder {
      * 打印一行字符
      *
      * @param {string} char 打印成行的字符
+     * @param {string} message 提示信息
+     * @param {boolean} middle 提示信息显示在行间
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printLine(char: string): EscPosEncoder {
+    printLine(char: string, message='', middle= false): EscPosEncoder {
       char = char.slice(0, 1);
-      this.line(char.repeat(this._printerParam.singleCharLength));
+      const restLength = this.singleCharLengthPerLine - this.getStrWidth(message);
+      if (middle) {
+        this.line(char.repeat(Math.floor(restLength/2))+message+char.repeat(Math.ceil(restLength/2)));
+      } else {
+        this.line(char.repeat(this.singleCharLengthPerLine));
+        if (message) {
+          this.line(' '.repeat(Math.floor(restLength/2))+message+' '.repeat(Math.ceil(restLength/2)));
+        }
+      }
       return this;
     }
 
@@ -192,20 +214,23 @@ export default class EscPosEncoder {
      * 前台打印菜品，包含菜品名称，数量，价格
      *
      * @param {Array} dishes 菜品信息数组
+     * @param {number} size 字体大小,默认1
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printFrontDeskDishs(dishes: {name: string; count: number; price: number}[]): EscPosEncoder {
-      const countAndPriceLength = 11; // 价格和个数的长度
+    printFrontDeskDishs(dishes: {name: string; count: number; price: number}[], size=1): EscPosEncoder {
+      const originSize = this._size;
+      const countAndPriceLength = 10; // 价格和个数的长度
       const getCountAndPriceStr = (count: number, price: number): string => {
-        const priceStr = (price*count).toFixed(2);
-        const countStr = '*' + count;
+        const priceStr = price.toFixed(2);
+        const countStr = 'x' + count;
         const spaceNum = countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(priceStr);
-        return countStr + ' '.repeat(spaceNum) + priceStr;
+        return countStr + ' '.repeat(spaceNum<0?0:spaceNum) + priceStr;
       };
+      this.size(size);
       dishes.forEach((dish) => {
         const fixedWidthStrArr = this.splitByWidth(
             dish.name,
-            this._printerParam.singleCharLength-countAndPriceLength-3
+            this.singleCharLengthPerLine-countAndPriceLength-2
         );
         fixedWidthStrArr.forEach((str, index) => {
           if (index === 0) {
@@ -215,6 +240,7 @@ export default class EscPosEncoder {
           }
         });
       });
+      this.size(originSize);
       return this;
     }
 
@@ -222,23 +248,27 @@ export default class EscPosEncoder {
      * 后厨打印菜品，包含菜品名称，数量，不包含价格
      *
      * @param {Array} dishes 菜品信息数组
+     * @param {number} size 字体大小,默认2
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printChefDishs(dishes: {name: string; count: number}[]): EscPosEncoder {
-      const countAndPriceLength = 6; // 价格和个数的长度
+    printChefDishs(dishes: {name: string; count: number}[], size=2): EscPosEncoder {
+      const originSize = this._size;
+      const countAndPriceLength = 3; // 价格和个数的长度
+      this.size(size);
       dishes.forEach((dish) => {
         const fixedWidthStrArr = this.splitByWidth(
             dish.name,
-            this._printerParam.singleCharLength-countAndPriceLength-3
+            this.singleCharLengthPerLine-countAndPriceLength
         );
         fixedWidthStrArr.forEach((str, index) => {
           if (index === 0) {
-            this.oneLine(str, `【*${dish.count}】`);
+            this.oneLine(str, `x${dish.count}`);
           } else {
             this.line(str);
           }
         });
       });
+      this.size(originSize);
       return this;
     }
 
@@ -381,8 +411,8 @@ export default class EscPosEncoder {
      *
      */
     oneLine(str1: string, str2: string): EscPosEncoder {
-      const spaceNum = this._printerParam.singleCharLength - this.getStrWidth(str1) - this.getStrWidth(str2);
-      this.line(str1 + ' '.repeat(spaceNum) + str2);
+      const spaceNum = this.singleCharLengthPerLine - this.getStrWidth(str1) - this.getStrWidth(str2);
+      this.line(str1 + ' '.repeat(spaceNum<0?0:spaceNum) + str2);
       return this;
     }
 
@@ -458,30 +488,16 @@ export default class EscPosEncoder {
      */
     size(value: number): EscPosEncoder {
       let realSize = 0;
+      this._size = value;
       switch (value) {
-        case 0:
+        case 0:// 正常字体
           realSize = 0;
           break;
-        case 1:
+        case 1:// 高度加倍
+          realSize = 1;
+          break;
+        case 2:// 宽高都加倍
           realSize = 17;
-          break;
-        case 2:
-          realSize = 34;
-          break;
-        case 3:
-          realSize = 51;
-          break;
-        case 4:
-          realSize = 68;
-          break;
-        case 5:
-          realSize = 85;
-          break;
-        case 6:
-          realSize = 102;
-          break;
-        case 7:
-          realSize = 119;
           break;
       }
 
