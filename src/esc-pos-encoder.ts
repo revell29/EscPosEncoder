@@ -228,6 +228,9 @@ export default class EscPosEncoder {
       };
       this.size(size);
       dishes.forEach((dish) => {
+        if (dish.count<=0) {
+          return;
+        }
         const fixedWidthStrArr = this.splitByWidth(
             dish.name,
             this.singleCharLengthPerLine-countAndPriceLength-2
@@ -261,6 +264,9 @@ export default class EscPosEncoder {
             this.singleCharLengthPerLine-countAndPriceLength
         );
         fixedWidthStrArr.forEach((str, index) => {
+          if (dish.count<=0) {
+            return;
+          }
           if (index === 0) {
             this.oneLine(str, `x${dish.count}`);
           } else {

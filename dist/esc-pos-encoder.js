@@ -213,6 +213,9 @@ var EscPosEncoder = /** @class */ (function () {
         };
         this.size(size);
         dishes.forEach(function (dish) {
+            if (dish.count <= 0) {
+                return;
+            }
             var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.singleCharLengthPerLine - countAndPriceLength - 2);
             fixedWidthStrArr.forEach(function (str, index) {
                 if (index === 0) {
@@ -242,6 +245,9 @@ var EscPosEncoder = /** @class */ (function () {
         dishes.forEach(function (dish) {
             var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.singleCharLengthPerLine - countAndPriceLength);
             fixedWidthStrArr.forEach(function (str, index) {
+                if (dish.count <= 0) {
+                    return;
+                }
                 if (index === 0) {
                     _this.oneLine(str, "x" + dish.count);
                 }
