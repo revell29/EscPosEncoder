@@ -269,6 +269,7 @@ var EscPosEncoder = /** @class */ (function () {
     EscPosEncoder.prototype.codepage = function (value) {
         var codepages = {
             'cp437': [0x00, false],
+            'cp720': [0x28, false],
             'cp737': [0x40, false],
             'cp850': [0x02, false],
             'cp775': [0x5f, false],
