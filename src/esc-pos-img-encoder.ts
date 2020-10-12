@@ -19,9 +19,11 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   private width58 = 384;
   private width80 = 568;
   private lineHeight = 32;
+  private lineHeight0 = 32;
+  private lineHeight2 = 64;
   private heightPosition = 32
   private cutAtFinal = false
-  private fontFoot = 16; // 给字体下方留下空间，方式截断
+  private fontFoot = 16; // 给字体下方留下空间，防止截断
 
 
   /**
@@ -45,9 +47,9 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   protected _reset(): void {
     this.heightPosition = 32;
     if (!this.CVS) {
-      this.CVS = createCanvas(this.width58, this.heightPosition+this.fontFoot);
+      this.CVS = createCanvas(this.width58, this.fontFoot);
     } else {
-      this.resize(this.width58, this.heightPosition);
+      this.resize(this.width58, 0);
     }
     this.ctx = this.CVS.getContext('2d');
     this.ctx.textBaseline = 'bottom';
@@ -79,12 +81,15 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     switch (value) {
       case 0:// 正常字体
         this.fontValue = '28px "Custom"';
+        this.lineHeight = this.lineHeight0;
         break;
       case 1:// 高度加倍
-        this.fontValue = '36px "Custom"';
+        this.fontValue = '28px "Custom"';
+        this.lineHeight = this.lineHeight0;
         break;
       case 2:// 宽高都加倍
         this.fontValue = '56px "Custom"';
+        this.lineHeight = this.lineHeight2;
         break;
     }
     this.ctx.font = this.fontValue;
@@ -137,8 +142,8 @@ export default class EscPosImgEncoder extends EscPosEncoder {
         this.CVS.width
     );
     fixedWidthStrArr.forEach((str) => {
-      this.text(str, wrap);
       this.newline();
+      this.text(str, wrap);
     });
     return this;
   }
@@ -268,10 +273,10 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    *
    */
   oneLine(str1: string, str2: string): EscPosEncoder {
+    this.newline();
     const {width} = this.ctx.measureText(str2);
     this.ctx.fillText(str1, 0, this.heightPosition);
     this.ctx.fillText(str2, this.CVS.width - width, this.heightPosition);
-    this.newline();
     return this;
   }
 
@@ -357,8 +362,8 @@ export default class EscPosImgEncoder extends EscPosEncoder {
       const char = str.slice(0, i);
       const {width} = this.ctx.measureText(char);
       if (width > maxLength) {
-        result.push(str.slice(0, i));
-        result = result.concat(this.splitByWidth(str.slice(i), maxLength));
+        result.push(str.slice(0, i-1));
+        result = result.concat(this.splitByWidth(str.slice(i-1), maxLength));
         return result;
       }
     }
@@ -374,5 +379,19 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   protected getStrWidth(str: string): number {
     const {width} = this.ctx.measureText(str);
     return width;
+  }
+
+  /**
+   * 打印空行
+   *
+   * @param {number} num 行数
+   * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+   */
+  emptyLine(num=1): EscPosEncoder {
+    for (let i = 0; i < num; i++) {
+      this.heightPosition+=this.lineHeight0;
+      this.resize(this.CVS.width, this.heightPosition);
+    }
+    return this;
   }
 }

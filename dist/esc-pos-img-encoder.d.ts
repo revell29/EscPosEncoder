@@ -15,6 +15,8 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     private width58;
     private width80;
     private lineHeight;
+    private lineHeight0;
+    private lineHeight2;
     private heightPosition;
     private cutAtFinal;
     private fontFoot;
@@ -171,5 +173,12 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      * @returns {number} 返回被分割的字符串数组
      */
     protected getStrWidth(str: string): number;
+    /**
+     * 打印空行
+     *
+     * @param {number} num 行数
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    emptyLine(num?: number): EscPosEncoder;
 }
 export {};

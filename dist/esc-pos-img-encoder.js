@@ -39,9 +39,11 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         _this.width58 = 384;
         _this.width80 = 568;
         _this.lineHeight = 32;
+        _this.lineHeight0 = 32;
+        _this.lineHeight2 = 64;
         _this.heightPosition = 32;
         _this.cutAtFinal = false;
-        _this.fontFoot = 16; // 给字体下方留下空间，方式截断
+        _this.fontFoot = 16; // 给字体下方留下空间，防止截断
         // console.log('canvasNode', canvasNode);
         // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
         _this.CVS = CVS;
@@ -55,10 +57,10 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     EscPosImgEncoder.prototype._reset = function () {
         this.heightPosition = 32;
         if (!this.CVS) {
-            this.CVS = canvas_1.createCanvas(this.width58, this.heightPosition + this.fontFoot);
+            this.CVS = canvas_1.createCanvas(this.width58, this.fontFoot);
         }
         else {
-            this.resize(this.width58, this.heightPosition);
+            this.resize(this.width58, 0);
         }
         this.ctx = this.CVS.getContext('2d');
         this.ctx.textBaseline = 'bottom';
@@ -88,12 +90,15 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         switch (value) {
             case 0: // 正常字体
                 this.fontValue = '28px "Custom"';
+                this.lineHeight = this.lineHeight0;
                 break;
             case 1: // 高度加倍
-                this.fontValue = '36px "Custom"';
+                this.fontValue = '28px "Custom"';
+                this.lineHeight = this.lineHeight0;
                 break;
             case 2: // 宽高都加倍
                 this.fontValue = '56px "Custom"';
+                this.lineHeight = this.lineHeight2;
                 break;
         }
         this.ctx.font = this.fontValue;
@@ -142,8 +147,8 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var _this = this;
         var fixedWidthStrArr = this.splitByWidth(value, this.CVS.width);
         fixedWidthStrArr.forEach(function (str) {
-            _this.text(str, wrap);
             _this.newline();
+            _this.text(str, wrap);
         });
         return this;
     };
@@ -268,10 +273,10 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype.oneLine = function (str1, str2) {
+        this.newline();
         var width = this.ctx.measureText(str2).width;
         this.ctx.fillText(str1, 0, this.heightPosition);
         this.ctx.fillText(str2, this.CVS.width - width, this.heightPosition);
-        this.newline();
         return this;
     };
     /**
@@ -353,8 +358,8 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
             var char = str.slice(0, i);
             var width = this.ctx.measureText(char).width;
             if (width > maxLength) {
-                result.push(str.slice(0, i));
-                result = result.concat(this.splitByWidth(str.slice(i), maxLength));
+                result.push(str.slice(0, i - 1));
+                result = result.concat(this.splitByWidth(str.slice(i - 1), maxLength));
                 return result;
             }
         }
@@ -369,6 +374,20 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     EscPosImgEncoder.prototype.getStrWidth = function (str) {
         var width = this.ctx.measureText(str).width;
         return width;
+    };
+    /**
+     * 打印空行
+     *
+     * @param {number} num 行数
+     * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
+     */
+    EscPosImgEncoder.prototype.emptyLine = function (num) {
+        if (num === void 0) { num = 1; }
+        for (var i = 0; i < num; i++) {
+            this.heightPosition += this.lineHeight0;
+            this.resize(this.CVS.width, this.heightPosition);
+        }
+        return this;
     };
     return EscPosImgEncoder;
 }(esc_pos_encoder_1.default));
