@@ -20,7 +20,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   private width80 = 568;
   private lineHeight = 32;
   private lineHeight0 = 32;
-  private lineHeight2 = 64;
+  private lineHeight2 = 56;
   private heightPosition = 32
   private cutAtFinal = false
   private fontFoot = 16; // 给字体下方留下空间，防止截断
