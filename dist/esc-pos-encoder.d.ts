@@ -9,10 +9,10 @@ export declare enum PrinterWidthEnum {
  * Create a byte stream based on commands for ESC/POS printers
  */
 export default class EscPosEncoder {
-    private _buffer;
+    protected _buffer: any;
     private _codepage;
     private _state;
-    private _size;
+    protected _size: number;
     private _58printerParam;
     private _80printerParam;
     private _printerParam;
@@ -21,7 +21,7 @@ export default class EscPosEncoder {
      *
      * @returns {number} 每行的单字节长度
      */
-    private get singleCharLengthPerLine();
+    protected get singleCharLengthPerLine(): number;
     /**
      * Create a new EscPosEncoder
      *
@@ -31,7 +31,7 @@ export default class EscPosEncoder {
      * Reset the state of the EscPosEncoder
      *
      */
-    private _reset;
+    protected _reset(): void;
     /**
      * Encode a string with the current code page
      *
@@ -61,14 +61,14 @@ export default class EscPosEncoder {
      * @param  {number}   maxLength  分割长度
      * @returns {Array} 返回被分割的字符串数组
      */
-    private splitByWidth;
+    protected splitByWidth(str: string, maxLength: number): string[];
     /**
      * 计算字符串的字节长度，也就是打印的宽度
      *
      * @param  {string}   str  需要计算的字符串
      * @returns {number} 返回被分割的字符串数组
      */
-    private getStrWidth;
+    protected getStrWidth(str: string): number;
     /**
      * Initialize the printer
      *
@@ -225,6 +225,18 @@ export default class EscPosEncoder {
      *
      */
     qrcode(value: string, model: number, size: number, errorlevel: string): EscPosEncoder;
+    /**
+     * Image
+     *
+     * @param  {object}         element  an element, like a canvas or image that needs to be printed
+     * @param  {number}         width  width of the image on the printer
+     * @param  {number}         height  height of the image on the printer
+     * @param  {string}         algorithm  the dithering algorithm for making the image black and white
+     * @param  {number}         threshold  threshold for the dithering algorithm
+     * @returns {object}                  Return the object, for easy chaining commands
+     *
+     */
+    image(element: any, width: any, height: any, algorithm: any, threshold?: any): EscPosEncoder;
     /**
      * Cut paper
      *

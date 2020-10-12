@@ -1,5 +1,8 @@
 import * as iconv from 'iconv-lite';
 import * as linewrap from 'linewrap';
+import {createCanvas} from 'canvas';
+import * as Dither from 'canvas-dither';
+import * as Flatten from 'canvas-flatten';
 
 declare module 'iconv-lite' {
     export const encodings: Array<string>;
@@ -20,10 +23,10 @@ export enum PrinterWidthEnum {
  * Create a byte stream based on commands for ESC/POS printers
  */
 export default class EscPosEncoder {
-    private _buffer
+    protected _buffer
     private _codepage
     private _state
-    private _size = 0
+    protected _size = 0
     private _58printerParam: PrinterParam = {
       width: 380,
       singleCharLength: 31,
@@ -37,12 +40,13 @@ export default class EscPosEncoder {
 
     private _printerParam: PrinterParam
 
+
     /**
      * 返回每行的单字节长度
      *
      * @returns {number} 每行的单字节长度
      */
-    private get singleCharLengthPerLine(): number {
+    protected get singleCharLengthPerLine(): number {
       return Math.floor(this._size===2?this._printerParam.singleCharLength/2:this._printerParam.singleCharLength);
     }
 
@@ -58,7 +62,7 @@ export default class EscPosEncoder {
      * Reset the state of the EscPosEncoder
      *
      */
-    private _reset(): void {
+    protected _reset(): void {
       this._buffer = [];
       this._codepage = 'ascii';
       this._printerParam = this._58printerParam;
@@ -116,7 +120,7 @@ export default class EscPosEncoder {
      * @param  {number}   maxLength  分割长度
      * @returns {Array} 返回被分割的字符串数组
      */
-    private splitByWidth(str: string, maxLength: number): string[] {
+    protected splitByWidth(str: string, maxLength: number): string[] {
       let width = 0;
       let result: string[] = [];
       for (let i = 0; i < str.length; i++) {
@@ -137,7 +141,7 @@ export default class EscPosEncoder {
      * @param  {string}   str  需要计算的字符串
      * @returns {number} 返回被分割的字符串数组
      */
-    private getStrWidth(str: string): number {
+    protected getStrWidth(str: string): number {
       let width = 0;
       for (let i = 0; i < str.length; i++) {
         const char = str.charAt(i);
@@ -309,6 +313,7 @@ export default class EscPosEncoder {
         'cp1252': [0x10, false],
         'iso88596': [0x16, false],
         'shiftjis': [0xfc, true],
+        'windows874': [0x1e, false],
         'windows1250': [0x48, false],
         'windows1251': [0x49, false],
         'windows1252': [0x47, false],
@@ -557,9 +562,17 @@ export default class EscPosEncoder {
         'upce': 0x01,
         'ean13': 0x02,
         'ean8': 0x03,
-        'coda39': 0x04,
+        'code39': 0x04,
         'itf': 0x05,
         'codabar': 0x06,
+        'code93': 0x48,
+        'code128': 0x49,
+        'gs1-128': 0x50,
+        'gs1-databar-omni': 0x51,
+        'gs1-databar-truncated': 0x52,
+        'gs1-databar-limited': 0x53,
+        'gs1-databar-expanded': 0x54,
+        'code128-auto': 0x55,
       };
 
       if (symbology in symbologies) {
@@ -568,10 +581,35 @@ export default class EscPosEncoder {
         this._queue([
           0x1d, 0x68, height,
           0x1d, 0x77, symbology === 'code39' ? 0x02 : 0x03,
-          0x1d, 0x6b, symbologies[symbology],
-          bytes,
-          0x00,
         ]);
+
+
+        if (symbology == 'code128' && bytes[0] !== 0x7b) {
+        /* Not yet encodeded Code 128, assume data is Code B, which is similar to ASCII without control chars */
+
+          this._queue([
+            0x1d, 0x6b, symbologies[symbology],
+            bytes.length + 2,
+            0x7b, 0x42,
+            bytes,
+          ]);
+        } else if (symbologies[symbology] > 0x40) {
+        /* Function B symbologies */
+
+          this._queue([
+            0x1d, 0x6b, symbologies[symbology],
+            bytes.length,
+            bytes,
+          ]);
+        } else {
+        /* Function A symbologies */
+
+          this._queue([
+            0x1d, 0x6b, symbologies[symbology],
+            bytes,
+            0x00,
+          ]);
+        }
       } else {
         throw new Error('Symbology not supported by printer');
       }
@@ -667,6 +705,77 @@ export default class EscPosEncoder {
 
       this._queue([
         0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x51, 0x30,
+      ]);
+
+      return this;
+    }
+
+    /**
+     * Image
+     *
+     * @param  {object}         element  an element, like a canvas or image that needs to be printed
+     * @param  {number}         width  width of the image on the printer
+     * @param  {number}         height  height of the image on the printer
+     * @param  {string}         algorithm  the dithering algorithm for making the image black and white
+     * @param  {number}         threshold  threshold for the dithering algorithm
+     * @returns {object}                  Return the object, for easy chaining commands
+     *
+     */
+    image(element, width, height, algorithm, threshold?): EscPosEncoder {
+      if (width % 8 !== 0) {
+        throw new Error('Width must be a multiple of 8');
+      }
+
+      if (height % 8 !== 0) {
+        throw new Error('Height must be a multiple of 8');
+      }
+
+      if (typeof algorithm === 'undefined') {
+        algorithm = 'threshold';
+      }
+
+      if (typeof threshold === 'undefined') {
+        threshold = 128;
+      }
+
+      const canvas = createCanvas(width, height);
+      const context = canvas.getContext('2d');
+      context.drawImage(element, 0, 0, width, height);
+      let image = context.getImageData(0, 0, width, height);
+
+      image = Flatten.flatten(image, [0xff, 0xff, 0xff]);
+
+      switch (algorithm) {
+        case 'threshold': image = Dither.threshold(image, threshold); break;
+        case 'bayer': image = Dither.bayer(image, threshold); break;
+        case 'floydsteinberg': image = Dither.floydsteinberg(image); break;
+        case 'atkinson': image = Dither.atkinson(image); break;
+      }
+
+      const getPixel = (x, y) => image.data[((width * y) + x) * 4] > 0 ? 0 : 1;
+
+      const bytes = new Uint8Array((width * height) >> 3);
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x = x + 8) {
+          const i = (y * (width >> 3)) + (x >> 3);
+          bytes[i] =
+                      getPixel(x + 0, y) << 7 |
+                      getPixel(x + 1, y) << 6 |
+                      getPixel(x + 2, y) << 5 |
+                      getPixel(x + 3, y) << 4 |
+                      getPixel(x + 4, y) << 3 |
+                      getPixel(x + 5, y) << 2 |
+                      getPixel(x + 6, y) << 1 |
+                      getPixel(x + 7, y);
+        }
+      }
+
+      this._queue([
+        0x1d, 0x76, 0x30, 0x00,
+        (width >> 3) & 0xff, (((width >> 3) >> 8) & 0xff),
+        height & 0xff, ((height >> 8) & 0xff),
+        bytes,
       ]);
 
       return this;
