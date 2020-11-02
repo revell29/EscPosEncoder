@@ -241,7 +241,7 @@ export default class EscPosEncoder {
         );
         fixedWidthStrArr.forEach((str, index) => {
           if (index === 0) {
-            this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+            this.oneLine(str, getCountAndPriceStr(dish.count, dish.price * dish.count));
           } else {
             this.line(str);
           }

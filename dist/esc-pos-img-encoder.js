@@ -305,7 +305,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
             var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.CVS.width - countAndPriceLength - _this.getStrWidth('  '));
             fixedWidthStrArr.forEach(function (str, index) {
                 if (index === 0) {
-                    _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+                    _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price * dish.count));
                 }
                 else {
                     _this.line(str);

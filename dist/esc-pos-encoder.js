@@ -222,7 +222,7 @@ var EscPosEncoder = /** @class */ (function () {
             var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.singleCharLengthPerLine - countAndPriceLength - 2);
             fixedWidthStrArr.forEach(function (str, index) {
                 if (index === 0) {
-                    _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+                    _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price * dish.count));
                 }
                 else {
                     _this.line(str);
