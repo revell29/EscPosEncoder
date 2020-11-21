@@ -1,6 +1,5 @@
 import * as iconv from 'iconv-lite';
 import * as linewrap from 'linewrap';
-import {createCanvas} from 'canvas';
 import * as Dither from 'canvas-dither';
 import * as Flatten from 'canvas-flatten';
 
@@ -738,7 +737,9 @@ export default class EscPosEncoder {
         threshold = 128;
       }
 
-      const canvas = createCanvas(width, height);
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
       const context = canvas.getContext('2d');
       context.drawImage(element, 0, 0, width, height);
       let image = context.getImageData(0, 0, width, height);

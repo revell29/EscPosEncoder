@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var iconv = require("iconv-lite");
 var linewrap = require("linewrap");
-var canvas_1 = require("canvas");
 var Dither = require("canvas-dither");
 var Flatten = require("canvas-flatten");
 var PrinterWidthEnum;
@@ -660,7 +659,9 @@ var EscPosEncoder = /** @class */ (function () {
         if (typeof threshold === 'undefined') {
             threshold = 128;
         }
-        var canvas = canvas_1.createCanvas(width, height);
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
         var context = canvas.getContext('2d');
         context.drawImage(element, 0, 0, width, height);
         var image = context.getImageData(0, 0, width, height);
@@ -773,7 +774,7 @@ var EscPosEncoder = /** @class */ (function () {
 }());
 exports.default = EscPosEncoder;
 
-},{"canvas":7,"canvas-dither":5,"canvas-flatten":6,"iconv-lite":28,"linewrap":31}],2:[function(require,module,exports){
+},{"canvas-dither":5,"canvas-flatten":6,"iconv-lite":26,"linewrap":29}],2:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -2607,7 +2608,7 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":2,"ieee754":30}],5:[function(require,module,exports){
+},{"base64-js":2,"ieee754":28}],5:[function(require,module,exports){
 /**
  * Use the ImageData from a Canvas and turn the image in a 1-bit black and white image using dithering
  */
@@ -2770,147 +2771,6 @@ class CanvasFlatten {
 module.exports = new CanvasFlatten();
 
 },{}],7:[function(require,module,exports){
-/* globals document, ImageData */
-
-const parseFont = require('./lib/parse-font')
-
-exports.parseFont = parseFont
-
-exports.createCanvas = function (width, height) {
-  return Object.assign(document.createElement('canvas'), { width: width, height: height })
-}
-
-exports.createImageData = function (array, width, height) {
-  // Browser implementation of ImageData looks at the number of arguments passed
-  switch (arguments.length) {
-    case 0: return new ImageData()
-    case 1: return new ImageData(array)
-    case 2: return new ImageData(array, width)
-    default: return new ImageData(array, width, height)
-  }
-}
-
-exports.loadImage = function (src, options) {
-  return new Promise(function (resolve, reject) {
-    const image = Object.assign(document.createElement('img'), options)
-
-    function cleanup () {
-      image.onload = null
-      image.onerror = null
-    }
-
-    image.onload = function () { cleanup(); resolve(image) }
-    image.onerror = function () { cleanup(); reject(new Error('Failed to load the image "' + src + '"')) }
-
-    image.src = src
-  })
-}
-
-},{"./lib/parse-font":8}],8:[function(require,module,exports){
-'use strict'
-
-/**
- * Font RegExp helpers.
- */
-
-const weights = 'bold|bolder|lighter|[1-9]00'
-  , styles = 'italic|oblique'
-  , variants = 'small-caps'
-  , stretches = 'ultra-condensed|extra-condensed|condensed|semi-condensed|semi-expanded|expanded|extra-expanded|ultra-expanded'
-  , units = 'px|pt|pc|in|cm|mm|%|em|ex|ch|rem|q'
-  , string = '\'([^\']+)\'|"([^"]+)"|[\\w\\s-]+'
-
-// [ [ <‘font-style’> || <font-variant-css21> || <‘font-weight’> || <‘font-stretch’> ]?
-//    <‘font-size’> [ / <‘line-height’> ]? <‘font-family’> ]
-// https://drafts.csswg.org/css-fonts-3/#font-prop
-const weightRe = new RegExp('(' + weights + ') +', 'i')
-const styleRe = new RegExp('(' + styles + ') +', 'i')
-const variantRe = new RegExp('(' + variants + ') +', 'i')
-const stretchRe = new RegExp('(' + stretches + ') +', 'i')
-const sizeFamilyRe = new RegExp(
-  '([\\d\\.]+)(' + units + ') *'
-  + '((?:' + string + ')( *, *(?:' + string + '))*)')
-
-/**
- * Cache font parsing.
- */
-
-const cache = {}
-
-const defaultHeight = 16 // pt, common browser default
-
-/**
- * Parse font `str`.
- *
- * @param {String} str
- * @return {Object} Parsed font. `size` is in device units. `unit` is the unit
- *   appearing in the input string.
- * @api private
- */
-
-module.exports = function (str) {
-  // Cached
-  if (cache[str]) return cache[str]
-
-  // Try for required properties first.
-  const sizeFamily = sizeFamilyRe.exec(str)
-  if (!sizeFamily) return // invalid
-
-  // Default values and required properties
-  const font = {
-    weight: 'normal',
-    style: 'normal',
-    stretch: 'normal',
-    variant: 'normal',
-    size: parseFloat(sizeFamily[1]),
-    unit: sizeFamily[2],
-    family: sizeFamily[3].replace(/["']/g, '').replace(/ *, */g, ',')
-  }
-
-  // Optional, unordered properties.
-  let weight, style, variant, stretch
-  // Stop search at `sizeFamily.index`
-  let substr = str.substring(0, sizeFamily.index)
-  if ((weight = weightRe.exec(substr))) font.weight = weight[1]
-  if ((style = styleRe.exec(substr))) font.style = style[1]
-  if ((variant = variantRe.exec(substr))) font.variant = variant[1]
-  if ((stretch = stretchRe.exec(substr))) font.stretch = stretch[1]
-
-  // Convert to device units. (`font.unit` is the original unit)
-  // TODO: ch, ex
-  switch (font.unit) {
-    case 'pt':
-      font.size /= 0.75
-      break
-    case 'pc':
-      font.size *= 16
-      break
-    case 'in':
-      font.size *= 96
-      break
-    case 'cm':
-      font.size *= 96.0 / 2.54
-      break
-    case 'mm':
-      font.size *= 96.0 / 25.4
-      break
-    case '%':
-      // TODO disabled because existing unit tests assume 100
-      // font.size *= defaultHeight / 100 / 0.75
-      break
-    case 'em':
-    case 'rem':
-      font.size *= defaultHeight / 0.75
-      break
-    case 'q':
-      font.size *= 96 / 25.4 / 4
-      break
-  }
-
-  return (cache[str] = font)
-}
-
-},{}],9:[function(require,module,exports){
 "use strict";
 var Buffer = require("safer-buffer").Buffer;
 
@@ -3509,7 +3369,7 @@ function findIdx(table, val) {
 }
 
 
-},{"safer-buffer":34}],10:[function(require,module,exports){
+},{"safer-buffer":32}],8:[function(require,module,exports){
 "use strict";
 
 // Description of supported double byte encodings and aliases.
@@ -3687,7 +3547,7 @@ module.exports = {
     'xxbig5': 'big5hkscs',
 };
 
-},{"./tables/big5-added.json":16,"./tables/cp936.json":17,"./tables/cp949.json":18,"./tables/cp950.json":19,"./tables/eucjp.json":20,"./tables/gb18030-ranges.json":21,"./tables/gbk-added.json":22,"./tables/shiftjis.json":23}],11:[function(require,module,exports){
+},{"./tables/big5-added.json":14,"./tables/cp936.json":15,"./tables/cp949.json":16,"./tables/cp950.json":17,"./tables/eucjp.json":18,"./tables/gb18030-ranges.json":19,"./tables/gbk-added.json":20,"./tables/shiftjis.json":21}],9:[function(require,module,exports){
 "use strict";
 
 // Update this array if you add/rename/remove files in this directory.
@@ -3712,7 +3572,7 @@ for (var i = 0; i < modules.length; i++) {
             exports[enc] = module[enc];
 }
 
-},{"./dbcs-codec":9,"./dbcs-data":10,"./internal":12,"./sbcs-codec":13,"./sbcs-data":15,"./sbcs-data-generated":14,"./utf16":24,"./utf32":25,"./utf7":26}],12:[function(require,module,exports){
+},{"./dbcs-codec":7,"./dbcs-data":8,"./internal":10,"./sbcs-codec":11,"./sbcs-data":13,"./sbcs-data-generated":12,"./utf16":22,"./utf32":23,"./utf7":24}],10:[function(require,module,exports){
 "use strict";
 var Buffer = require("safer-buffer").Buffer;
 
@@ -3912,7 +3772,7 @@ InternalDecoderCesu8.prototype.end = function() {
     return res;
 }
 
-},{"safer-buffer":34,"string_decoder":35}],13:[function(require,module,exports){
+},{"safer-buffer":32,"string_decoder":33}],11:[function(require,module,exports){
 "use strict";
 var Buffer = require("safer-buffer").Buffer;
 
@@ -3986,7 +3846,7 @@ SBCSDecoder.prototype.write = function(buf) {
 SBCSDecoder.prototype.end = function() {
 }
 
-},{"safer-buffer":34}],14:[function(require,module,exports){
+},{"safer-buffer":32}],12:[function(require,module,exports){
 "use strict";
 
 // Generated data for sbcs codec. Don't edit manually. Regenerate using generation/gen-sbcs.js script.
@@ -4438,7 +4298,7 @@ module.exports = {
     "chars": "���������������������������������กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮฯะัาำิีึืฺุู����฿เแโใไๅๆ็่้๊๋์ํ๎๏๐๑๒๓๔๕๖๗๘๙๚๛����"
   }
 }
-},{}],15:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 
 // Manually added data to be used by sbcs codec in addition to generated one.
@@ -4619,7 +4479,7 @@ module.exports = {
 };
 
 
-},{}],16:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports=[
 ["8740","䏰䰲䘃䖦䕸𧉧䵷䖳𧲱䳢𧳅㮕䜶䝄䱇䱀𤊿𣘗𧍒𦺋𧃒䱗𪍑䝏䗚䲅𧱬䴇䪤䚡𦬣爥𥩔𡩣𣸆𣽡晍囻"],
 ["8767","綕夝𨮹㷴霴𧯯寛𡵞媤㘥𩺰嫑宷峼杮薓𩥅瑡璝㡵𡵓𣚞𦀡㻬"],
@@ -4743,7 +4603,7 @@ module.exports=[
 ["fea1","𤅟𤩹𨮏孆𨰃𡢞瓈𡦈甎瓩甞𨻙𡩋寗𨺬鎅畍畊畧畮𤾂㼄𤴓疎瑝疞疴瘂瘬癑癏癯癶𦏵皐臯㟸𦤑𦤎皡皥皷盌𦾟葢𥂝𥅽𡸜眞眦着撯𥈠睘𣊬瞯𨥤𨥨𡛁矴砉𡍶𤨒棊碯磇磓隥礮𥗠磗礴碱𧘌辸袄𨬫𦂃𢘜禆褀椂禀𥡗禝𧬹礼禩渪𧄦㺨秆𩄍秔"]
 ]
 
-},{}],17:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports=[
 ["0","\u0000",127,"€"],
 ["8140","丂丄丅丆丏丒丗丟丠両丣並丩丮丯丱丳丵丷丼乀乁乂乄乆乊乑乕乗乚乛乢乣乤乥乧乨乪",5,"乲乴",9,"乿",6,"亇亊"],
@@ -5009,7 +4869,7 @@ module.exports=[
 ["fe40","兀嗀﨎﨏﨑﨓﨔礼﨟蘒﨡﨣﨤﨧﨨﨩"]
 ]
 
-},{}],18:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports=[
 ["0","\u0000",127],
 ["8141","갂갃갅갆갋",4,"갘갞갟갡갢갣갥",6,"갮갲갳갴"],
@@ -5284,7 +5144,7 @@ module.exports=[
 ["fda1","爻肴酵驍侯候厚后吼喉嗅帿後朽煦珝逅勛勳塤壎焄熏燻薰訓暈薨喧暄煊萱卉喙毁彙徽揮暉煇諱輝麾休携烋畦虧恤譎鷸兇凶匈洶胸黑昕欣炘痕吃屹紇訖欠欽歆吸恰洽翕興僖凞喜噫囍姬嬉希憙憘戱晞曦熙熹熺犧禧稀羲詰"]
 ]
 
-},{}],19:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports=[
 ["0","\u0000",127],
 ["a140","　，、。．‧；：？！︰…‥﹐﹑﹒·﹔﹕﹖﹗｜–︱—︳╴︴﹏（）︵︶｛｝︷︸〔〕︹︺【】︻︼《》︽︾〈〉︿﹀「」﹁﹂『』﹃﹄﹙﹚"],
@@ -5463,7 +5323,7 @@ module.exports=[
 ["f9a1","龤灨灥糷虪蠾蠽蠿讞貜躩軉靋顳顴飌饡馫驤驦驧鬤鸕鸗齈戇欞爧虌躨钂钀钁驩驨鬮鸙爩虋讟钃鱹麷癵驫鱺鸝灩灪麤齾齉龘碁銹裏墻恒粧嫺╔╦╗╠╬╣╚╩╝╒╤╕╞╪╡╘╧╛╓╥╖╟╫╢╙╨╜║═╭╮╰╯▓"]
 ]
 
-},{}],20:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports=[
 ["0","\u0000",127],
 ["8ea1","｡",62],
@@ -5647,9 +5507,9 @@ module.exports=[
 ["8feda1","黸黿鼂鼃鼉鼏鼐鼑鼒鼔鼖鼗鼙鼚鼛鼟鼢鼦鼪鼫鼯鼱鼲鼴鼷鼹鼺鼼鼽鼿齁齃",4,"齓齕齖齗齘齚齝齞齨齩齭",4,"齳齵齺齽龏龐龑龒龔龖龗龞龡龢龣龥"]
 ]
 
-},{}],21:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 module.exports={"uChars":[128,165,169,178,184,216,226,235,238,244,248,251,253,258,276,284,300,325,329,334,364,463,465,467,469,471,473,475,477,506,594,610,712,716,730,930,938,962,970,1026,1104,1106,8209,8215,8218,8222,8231,8241,8244,8246,8252,8365,8452,8454,8458,8471,8482,8556,8570,8596,8602,8713,8720,8722,8726,8731,8737,8740,8742,8748,8751,8760,8766,8777,8781,8787,8802,8808,8816,8854,8858,8870,8896,8979,9322,9372,9548,9588,9616,9622,9634,9652,9662,9672,9676,9680,9702,9735,9738,9793,9795,11906,11909,11913,11917,11928,11944,11947,11951,11956,11960,11964,11979,12284,12292,12312,12319,12330,12351,12436,12447,12535,12543,12586,12842,12850,12964,13200,13215,13218,13253,13263,13267,13270,13384,13428,13727,13839,13851,14617,14703,14801,14816,14964,15183,15471,15585,16471,16736,17208,17325,17330,17374,17623,17997,18018,18212,18218,18301,18318,18760,18811,18814,18820,18823,18844,18848,18872,19576,19620,19738,19887,40870,59244,59336,59367,59413,59417,59423,59431,59437,59443,59452,59460,59478,59493,63789,63866,63894,63976,63986,64016,64018,64021,64025,64034,64037,64042,65074,65093,65107,65112,65127,65132,65375,65510,65536],"gbChars":[0,36,38,45,50,81,89,95,96,100,103,104,105,109,126,133,148,172,175,179,208,306,307,308,309,310,311,312,313,341,428,443,544,545,558,741,742,749,750,805,819,820,7922,7924,7925,7927,7934,7943,7944,7945,7950,8062,8148,8149,8152,8164,8174,8236,8240,8262,8264,8374,8380,8381,8384,8388,8390,8392,8393,8394,8396,8401,8406,8416,8419,8424,8437,8439,8445,8482,8485,8496,8521,8603,8936,8946,9046,9050,9063,9066,9076,9092,9100,9108,9111,9113,9131,9162,9164,9218,9219,11329,11331,11334,11336,11346,11361,11363,11366,11370,11372,11375,11389,11682,11686,11687,11692,11694,11714,11716,11723,11725,11730,11736,11982,11989,12102,12336,12348,12350,12384,12393,12395,12397,12510,12553,12851,12962,12973,13738,13823,13919,13933,14080,14298,14585,14698,15583,15847,16318,16434,16438,16481,16729,17102,17122,17315,17320,17402,17418,17859,17909,17911,17915,17916,17936,17939,17961,18664,18703,18814,18962,19043,33469,33470,33471,33484,33485,33490,33497,33501,33505,33513,33520,33536,33550,37845,37921,37948,38029,38038,38064,38065,38066,38069,38075,38076,38078,39108,39109,39113,39114,39115,39116,39265,39394,189000]}
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports=[
 ["a140","",62],
 ["a180","",32],
@@ -5707,7 +5567,7 @@ module.exports=[
 ["8135f437",""]
 ]
 
-},{}],23:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports=[
 ["0","\u0000",128],
 ["a1","｡",62],
@@ -5834,7 +5694,7 @@ module.exports=[
 ["fc40","髜魵魲鮏鮱鮻鰀鵰鵫鶴鸙黑"]
 ]
 
-},{}],24:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 var Buffer = require("safer-buffer").Buffer;
 
@@ -6033,7 +5893,7 @@ function detectEncoding(bufs, defaultEncoding) {
 
 
 
-},{"safer-buffer":34}],25:[function(require,module,exports){
+},{"safer-buffer":32}],23:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safer-buffer').Buffer;
@@ -6354,7 +6214,7 @@ function detectEncoding(bufs, defaultEncoding) {
     return defaultEncoding || 'utf-32le';
 }
 
-},{"safer-buffer":34}],26:[function(require,module,exports){
+},{"safer-buffer":32}],24:[function(require,module,exports){
 "use strict";
 var Buffer = require("safer-buffer").Buffer;
 
@@ -6646,7 +6506,7 @@ Utf7IMAPDecoder.prototype.end = function() {
 
 
 
-},{"safer-buffer":34}],27:[function(require,module,exports){
+},{"safer-buffer":32}],25:[function(require,module,exports){
 "use strict";
 
 var BOMChar = '\uFEFF';
@@ -6700,7 +6560,7 @@ StripBOMWrapper.prototype.end = function() {
 }
 
 
-},{}],28:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 "use strict";
 
 var Buffer = require("safer-buffer").Buffer;
@@ -6882,7 +6742,7 @@ if ("Ā" != "\u0100") {
     console.error("iconv-lite warning: js files use non-utf8 encoding. See https://github.com/ashtuchkin/iconv-lite/wiki/Javascript-source-file-encodings for more info.");
 }
 
-},{"../encodings":11,"./bom-handling":27,"./streams":29,"safer-buffer":34,"stream":3}],29:[function(require,module,exports){
+},{"../encodings":9,"./bom-handling":25,"./streams":27,"safer-buffer":32,"stream":3}],27:[function(require,module,exports){
 "use strict";
 
 var Buffer = require("safer-buffer").Buffer;
@@ -6993,7 +6853,7 @@ module.exports = function(stream_module) {
     };
 };
 
-},{"safer-buffer":34}],30:[function(require,module,exports){
+},{"safer-buffer":32}],28:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -7079,7 +6939,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],31:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 
 // Presets
 var presetMap = {
@@ -7866,7 +7726,7 @@ linewrap.wrap = function(text/*, start, stop, params*/) {
     return linewrap.apply(null, args)(text);
 };
 
-},{}],32:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -8052,7 +7912,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],33:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -8116,7 +7976,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":4}],34:[function(require,module,exports){
+},{"buffer":4}],32:[function(require,module,exports){
 (function (process){
 /* eslint-disable node/no-deprecated-api */
 
@@ -8197,7 +8057,7 @@ if (!safer.constants) {
 module.exports = safer
 
 }).call(this,require('_process'))
-},{"_process":32,"buffer":4}],35:[function(require,module,exports){
+},{"_process":30,"buffer":4}],33:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -8470,5 +8330,5 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":33}]},{},[1])(1)
+},{"safe-buffer":31}]},{},[1])(1)
 });

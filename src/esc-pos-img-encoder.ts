@@ -1,5 +1,4 @@
 import EscPosEncoder, {PrinterWidthEnum} from './esc-pos-encoder';
-import {createCanvas, Canvas, CanvasRenderingContext2D, registerFont} from 'canvas';
 
 enum AlignEnum {
     'left'= 'left',
@@ -12,7 +11,7 @@ enum AlignEnum {
  * Create a byte stream based on commands for ESC/POS printers
  */
 export default class EscPosImgEncoder extends EscPosEncoder {
-  private CVS: Canvas
+  private CVS: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private alignValue: AlignEnum = AlignEnum.left
   private fontValue = '28px "Custom"';
@@ -28,15 +27,12 @@ export default class EscPosImgEncoder extends EscPosEncoder {
 
   /**
    * Create a new EscPosEncoder
-   *
-   * @param  {Canvas} CVS   small or normal
-   *
    */
-  constructor(CVS?) {
+  constructor() {
     super();
     // console.log('canvasNode', canvasNode);
     // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
-    this.CVS = CVS;
+    this.CVS = document.createElement('canvas');
     this._reset();
   }
 
@@ -46,11 +42,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    */
   protected _reset(): void {
     this.heightPosition = 32;
-    if (!this.CVS) {
-      this.CVS = createCanvas(this.width58, this.fontFoot);
-    } else {
-      this.resize(this.width58, 0);
-    }
+    this.resize(this.width58, 0);
     this.ctx = this.CVS.getContext('2d');
     this.ctx.textBaseline = 'bottom';
     console.log('_reset', this.CVS);

@@ -22,11 +22,8 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     private fontFoot;
     /**
      * Create a new EscPosEncoder
-     *
-     * @param  {Canvas} CVS   small or normal
-     *
      */
-    constructor(CVS?: any);
+    constructor();
     /**
      * Reset the state of the EscPosEncoder
      *

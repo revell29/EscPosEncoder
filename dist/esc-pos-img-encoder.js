@@ -14,7 +14,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var esc_pos_encoder_1 = require("./esc-pos-encoder");
-var canvas_1 = require("canvas");
 var AlignEnum;
 (function (AlignEnum) {
     AlignEnum["left"] = "left";
@@ -28,11 +27,8 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     __extends(EscPosImgEncoder, _super);
     /**
      * Create a new EscPosEncoder
-     *
-     * @param  {Canvas} CVS   small or normal
-     *
      */
-    function EscPosImgEncoder(CVS) {
+    function EscPosImgEncoder() {
         var _this = _super.call(this) || this;
         _this.alignValue = AlignEnum.left;
         _this.fontValue = '28px "Custom"';
@@ -46,7 +42,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         _this.fontFoot = 16; // 给字体下方留下空间，防止截断
         // console.log('canvasNode', canvasNode);
         // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
-        _this.CVS = CVS;
+        _this.CVS = document.createElement('canvas');
         _this._reset();
         return _this;
     }
@@ -56,12 +52,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      */
     EscPosImgEncoder.prototype._reset = function () {
         this.heightPosition = 32;
-        if (!this.CVS) {
-            this.CVS = canvas_1.createCanvas(this.width58, this.fontFoot);
-        }
-        else {
-            this.resize(this.width58, 0);
-        }
+        this.resize(this.width58, 0);
         this.ctx = this.CVS.getContext('2d');
         this.ctx.textBaseline = 'bottom';
         console.log('_reset', this.CVS);
