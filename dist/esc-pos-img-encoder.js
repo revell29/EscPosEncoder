@@ -52,9 +52,9 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      */
     EscPosImgEncoder.prototype._reset = function () {
         this.heightPosition = 32;
-        this.resize(this.width58, 0);
         this.ctx = this.CVS.getContext('2d');
         this.ctx.textBaseline = 'bottom';
+        this.resize(this.width58, 0);
         console.log('_reset', this.CVS);
         _super.prototype._reset.call(this);
     };

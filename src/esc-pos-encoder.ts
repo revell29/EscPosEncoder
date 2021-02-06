@@ -322,6 +322,7 @@ export default class EscPosEncoder {
         'windows1256': [0x5c, false],
         'windows1257': [0x19, false],
         'windows1258': [0x5e, false],
+        'tcvn': [0x1c, false], // 芯烨打印机的越南语
       };
 
       let codepage;
@@ -791,6 +792,20 @@ export default class EscPosEncoder {
     cut(): EscPosEncoder {
       this._queue([
         0x1d, 0x56, 0x41, 0x00,
+      ]);
+
+      return this;
+    }
+
+    /**
+     * 打开钱箱
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    openCashBox(): EscPosEncoder {
+      this._queue([
+        0x1b, 0x70, 0x00, 0x3c, 0xff,
       ]);
 
       return this;

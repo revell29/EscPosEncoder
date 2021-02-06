@@ -302,6 +302,7 @@ var EscPosEncoder = /** @class */ (function () {
             'windows1256': [0x5c, false],
             'windows1257': [0x19, false],
             'windows1258': [0x5e, false],
+            'tcvn': [0x1c, false],
         };
         var codepage;
         if (!iconv.encodingExists(value)) {
@@ -713,6 +714,18 @@ var EscPosEncoder = /** @class */ (function () {
     EscPosEncoder.prototype.cut = function () {
         this._queue([
             0x1d, 0x56, 0x41, 0x00,
+        ]);
+        return this;
+    };
+    /**
+     * 打开钱箱
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    EscPosEncoder.prototype.openCashBox = function () {
+        this._queue([
+            0x1b, 0x70, 0x00, 0x3c, 0xff,
         ]);
         return this;
     };

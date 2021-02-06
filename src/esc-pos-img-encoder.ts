@@ -42,9 +42,9 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    */
   protected _reset(): void {
     this.heightPosition = 32;
-    this.resize(this.width58, 0);
     this.ctx = this.CVS.getContext('2d');
     this.ctx.textBaseline = 'bottom';
+    this.resize(this.width58, 0);
     console.log('_reset', this.CVS);
     super._reset();
   }

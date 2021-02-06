@@ -245,6 +245,13 @@ export default class EscPosEncoder {
      */
     cut(): EscPosEncoder;
     /**
+     * 打开钱箱
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    openCashBox(): EscPosEncoder;
+    /**
      * Cut paper partial
      *
      * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
