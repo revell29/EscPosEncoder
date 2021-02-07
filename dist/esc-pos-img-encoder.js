@@ -30,6 +30,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      */
     function EscPosImgEncoder() {
         var _this = _super.call(this) || this;
+        _this.CVS = document.createElement('canvas');
         _this.alignValue = AlignEnum.left;
         _this.fontValue = '28px "Custom"';
         _this.width58 = 384;
@@ -40,11 +41,8 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         _this.heightPosition = 32;
         _this.cutAtFinal = false;
         _this.fontFoot = 16; // 给字体下方留下空间，防止截断
-        // console.log('canvasNode', canvasNode);
-        // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
-        _this.CVS = document.createElement('canvas');
-        _this._reset();
         return _this;
+        // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
     }
     /**
      * Reset the state of the EscPosEncoder
