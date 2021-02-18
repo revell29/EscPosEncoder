@@ -30,6 +30,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      */
     function EscPosImgEncoder() {
         var _this = _super.call(this) || this;
+        _this.CVS = document.createElement('canvas');
         _this.alignValue = AlignEnum.left;
         _this.fontValue = '28px "Custom"';
         _this.width58 = 384;
@@ -48,12 +49,13 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype._reset = function () {
-        this.CVS = this.CVS || document.createElement('canvas');
-        this.heightPosition = 32;
-        this.ctx = this.CVS.getContext('2d');
-        this.ctx.textBaseline = 'bottom';
-        this.resize(this.width58, 0);
-        console.log('_reset', this.CVS);
+        if (this.CVS) { // 如果是子类调用再执行，父类构造函数调用不能执行，因为this还没初始化
+            this.heightPosition = 32;
+            this.ctx = this.CVS.getContext('2d');
+            this.ctx.textBaseline = 'bottom';
+            this.resize(this.width58, 0);
+            console.log('_reset', this.CVS);
+        }
         _super.prototype._reset.call(this);
     };
     /**

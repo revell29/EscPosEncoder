@@ -11,7 +11,7 @@ enum AlignEnum {
  * Create a byte stream based on commands for ESC/POS printers
  */
 export default class EscPosImgEncoder extends EscPosEncoder {
-  private CVS: HTMLCanvasElement
+  private CVS: HTMLCanvasElement = document.createElement('canvas');
   private ctx: CanvasRenderingContext2D
   private alignValue: AlignEnum = AlignEnum.left
   private fontValue = '28px "Custom"';
@@ -38,12 +38,13 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    *
    */
   protected _reset(): void {
-    this.CVS = this.CVS || document.createElement('canvas');
-    this.heightPosition = 32;
-    this.ctx = this.CVS.getContext('2d');
-    this.ctx.textBaseline = 'bottom';
-    this.resize(this.width58, 0);
-    console.log('_reset', this.CVS);
+    if (this.CVS) {// 如果是子类调用再执行，父类构造函数调用不能执行，因为this还没初始化
+      this.heightPosition = 32;
+      this.ctx = this.CVS.getContext('2d');
+      this.ctx.textBaseline = 'bottom';
+      this.resize(this.width58, 0);
+      console.log('_reset', this.CVS);
+    }
     super._reset();
   }
 
