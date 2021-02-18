@@ -30,7 +30,6 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      */
     function EscPosImgEncoder() {
         var _this = _super.call(this) || this;
-        _this.CVS = document.createElement('canvas');
         _this.alignValue = AlignEnum.left;
         _this.fontValue = '28px "Custom"';
         _this.width58 = 384;
@@ -49,6 +48,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype._reset = function () {
+        this.CVS = this.CVS || document.createElement('canvas');
         this.heightPosition = 32;
         this.ctx = this.CVS.getContext('2d');
         this.ctx.textBaseline = 'bottom';
