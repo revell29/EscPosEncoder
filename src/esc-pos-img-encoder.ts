@@ -30,6 +30,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    */
   constructor() {
     super();
+    this._reset();
     // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
   }
 

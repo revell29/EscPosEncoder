@@ -41,6 +41,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         _this.heightPosition = 32;
         _this.cutAtFinal = false;
         _this.fontFoot = 16; // 给字体下方留下空间，防止截断
+        _this._reset();
         return _this;
         // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
     }
