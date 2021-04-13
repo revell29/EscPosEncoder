@@ -878,17 +878,17 @@ export default class EscPosEncoder {
     /**
      * 格式化小额币种价格
      *
-     * @param  {Number}   price   原始价格
-     * @returns {String}   返回处理后的价格字符串，10000.54 =》 10,000
+     * @param  {number}   price   原始价格
+     * @returns {string}   返回处理后的价格字符串，10000.54 =》 10,000
      *
      */
     bigPriceFormat(price: number): string {
       const removeTailPriceStrArr = String(Math.floor(price)).split('').reverse();
-      for(let i=3;i<removeTailPriceStrArr.length;i+=3) {
-        console.log(i)
-        removeTailPriceStrArr.splice(i,0,',');
-        i++
+      for (let i=3; i<removeTailPriceStrArr.length; i+=3) {
+        console.log(i);
+        removeTailPriceStrArr.splice(i, 0, ',');
+        i++;
       }
-      return removeTailPriceStrArr.reverse().join('')
+      return removeTailPriceStrArr.reverse().join('');
     }
 }

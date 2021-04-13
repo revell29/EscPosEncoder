@@ -276,15 +276,18 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      * @param {Array} dishes 菜品信息数组
      * @param {number} size 字体大小,默认1
+     * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    EscPosImgEncoder.prototype.printFrontDeskDishs = function (dishes, size) {
+    EscPosImgEncoder.prototype.printFrontDeskDishs = function (dishes, size, bigPrice) {
         var _this = this;
         if (size === void 0) { size = 1; }
+        if (bigPrice === void 0) { bigPrice = false; }
         var originSize = this._size;
-        var countAndPriceLength = this.ctx.measureText('x99 999.99').width;
+        var measureTextStr = bigPrice ? 'x99 9,999,999' : 'x99 999.99';
+        var countAndPriceLength = this.ctx.measureText(measureTextStr).width;
         var getCountAndPriceStr = function (count, price) {
-            var priceStr = price.toFixed(2);
+            var priceStr = bigPrice ? _this.bigPriceFormat(price) : price.toFixed(2);
             var countStr = 'x' + count;
             var spaceNum = (countAndPriceLength - _this.getStrWidth(countStr) - _this.getStrWidth(priceStr)) / _this.getStrWidth(' ');
             return countStr + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + priceStr;

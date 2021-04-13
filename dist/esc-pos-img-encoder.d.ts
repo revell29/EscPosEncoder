@@ -137,13 +137,14 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      *
      * @param {Array} dishes 菜品信息数组
      * @param {number} size 字体大小,默认1
+     * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
     printFrontDeskDishs(dishes: {
         name: string;
         count: number;
         price: number;
-    }[], size?: number): EscPosEncoder;
+    }[], size?: number, bigPrice?: boolean): EscPosEncoder;
     /**
      * 后厨打印菜品，包含菜品名称，数量，不包含价格
      *
