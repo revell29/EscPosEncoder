@@ -218,13 +218,14 @@ export default class EscPosEncoder {
      *
      * @param {Array} dishes 菜品信息数组
      * @param {number} size 字体大小,默认1
+     * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printFrontDeskDishs(dishes: {name: string; count: number; price: number}[], size=1): EscPosEncoder {
+    printFrontDeskDishs(dishes: {name: string; count: number; price: number}[], size=1, bigPrice=false): EscPosEncoder {
       const originSize = this._size;
-      const countAndPriceLength = 10; // 价格和个数的长度
+      const countAndPriceLength = bigPrice?13:10; // 价格和个数的长度
       const getCountAndPriceStr = (count: number, price: number): string => {
-        const priceStr = price.toFixed(2);
+        const priceStr = bigPrice?this.bigPriceFormat(price):price.toFixed(2);
         const countStr = 'x' + count;
         const spaceNum = countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(priceStr);
         return countStr + ' '.repeat(spaceNum<0?0:spaceNum) + priceStr;
@@ -872,5 +873,22 @@ export default class EscPosEncoder {
       this._reset();
 
       return result;
+    }
+
+    /**
+     * 格式化小额币种价格
+     *
+     * @param  {Number}   price   原始价格
+     * @returns {String}   返回处理后的价格字符串，10000.54 =》 10,000
+     *
+     */
+    bigPriceFormat(price: number): string {
+      const removeTailPriceStrArr = String(Math.floor(price)).split('').reverse();
+      for(let i=3;i<removeTailPriceStrArr.length;i+=3) {
+        console.log(i)
+        removeTailPriceStrArr.splice(i,0,',');
+        i++
+      }
+      return removeTailPriceStrArr.reverse().join('')
     }
 }

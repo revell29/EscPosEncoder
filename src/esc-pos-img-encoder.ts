@@ -278,13 +278,15 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    *
    * @param {Array} dishes 菜品信息数组
    * @param {number} size 字体大小,默认1
+   * @param {boolean} bigPrice 小币种价格，默认false
    * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
    */
-  printFrontDeskDishs(dishes: {name: string; count: number; price: number}[], size=1): EscPosEncoder {
+  printFrontDeskDishs(dishes: {name: string; count: number; price: number}[], size=1, bigPrice=false): EscPosEncoder {
     const originSize = this._size;
-    const {width: countAndPriceLength} = this.ctx.measureText('x99 999.99');
+    const measureTextStr = bigPrice?'x99 9,999,999':'x99 999.99';
+    const {width: countAndPriceLength} = this.ctx.measureText(measureTextStr);
     const getCountAndPriceStr = (count: number, price: number): string => {
-      const priceStr = price.toFixed(2);
+      const priceStr = bigPrice?this.bigPriceFormat(price):price.toFixed(2);
       const countStr = 'x' + count;
       const spaceNum = (countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(priceStr))/this.getStrWidth(' ');
       return countStr + ' '.repeat(spaceNum<0?0:spaceNum) + priceStr;
