@@ -20,10 +20,11 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     private heightPosition;
     private cutAtFinal;
     private fontFoot;
+    private fontFamily;
     /**
      * Create a new EscPosEncoder
      */
-    constructor();
+    constructor(fontFamily?: any);
     /**
      * Reset the state of the EscPosEncoder
      *

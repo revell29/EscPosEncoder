@@ -23,13 +23,17 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   private heightPosition = 32
   private cutAtFinal = false
   private fontFoot = 16; // 给字体下方留下空间，防止截断
+  private fontFamily = "Custom";
 
 
   /**
    * Create a new EscPosEncoder
    */
-  constructor() {
+  constructor(fontFamily?) {
     super();
+    if(fontFamily) {
+      this.fontFamily = fontFamily;
+    }
     this._reset();
     // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
   }
@@ -72,15 +76,15 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     this._size = value;
     switch (value) {
       case 0:// 正常字体
-        this.fontValue = '28px "Custom"';
+        this.fontValue = `28px "${this.fontFamily}"`;
         this.lineHeight = this.lineHeight0;
         break;
       case 1:// 高度加倍
-        this.fontValue = '28px "Custom"';
+        this.fontValue = `28px "${this.fontFamily}"`;
         this.lineHeight = this.lineHeight0;
         break;
       case 2:// 宽高都加倍
-        this.fontValue = '56px "Custom"';
+        this.fontValue = `56px "${this.fontFamily}"`;
         this.lineHeight = this.lineHeight2;
         break;
     }

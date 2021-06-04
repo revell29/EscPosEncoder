@@ -28,7 +28,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     /**
      * Create a new EscPosEncoder
      */
-    function EscPosImgEncoder() {
+    function EscPosImgEncoder(fontFamily) {
         var _this = _super.call(this) || this;
         _this.CVS = document.createElement('canvas');
         _this.alignValue = AlignEnum.left;
@@ -41,6 +41,10 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         _this.heightPosition = 32;
         _this.cutAtFinal = false;
         _this.fontFoot = 16; // 给字体下方留下空间，防止截断
+        _this.fontFamily = "Custom";
+        if (fontFamily) {
+            _this.fontFamily = fontFamily;
+        }
         _this._reset();
         return _this;
         // registerFont('../../../../src/assets/font/锐字云字库胖头鱼体GBK.ttf', {family: 'Custom'});
@@ -81,15 +85,15 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         this._size = value;
         switch (value) {
             case 0: // 正常字体
-                this.fontValue = '28px "Custom"';
+                this.fontValue = "28px \"" + this.fontFamily + "\"";
                 this.lineHeight = this.lineHeight0;
                 break;
             case 1: // 高度加倍
-                this.fontValue = '28px "Custom"';
+                this.fontValue = "28px \"" + this.fontFamily + "\"";
                 this.lineHeight = this.lineHeight0;
                 break;
             case 2: // 宽高都加倍
-                this.fontValue = '56px "Custom"';
+                this.fontValue = "56px \"" + this.fontFamily + "\"";
                 this.lineHeight = this.lineHeight2;
                 break;
         }
