@@ -190,6 +190,21 @@ export default class EscPosEncoder {
      */
     bold(value: boolean): EscPosEncoder;
     /**
+     * 设置行间距
+     *
+     * @param  {boolean}          bigFont  是否大号字体
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    enlargeLineHeight(bigFont: boolean): EscPosEncoder;
+    /**
+     * 回到默认行间距
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    defaultLineHeight(): EscPosEncoder;
+    /**
      * Change text size
      *
      * @param  {number}          value   small or normal

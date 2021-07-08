@@ -21,6 +21,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     private cutAtFinal;
     private fontFoot;
     private fontFamily;
+    private lineHeightInterval;
     /**
      * Create a new EscPosEncoder
      */
@@ -108,6 +109,21 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      *
      */
     bold(value: boolean): EscPosEncoder;
+    /**
+     * 放大行间距
+     *
+     * @param  {boolean}          bigFont  是否大号字体
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    enlargeLineHeight(bigFont: boolean): EscPosEncoder;
+    /**
+     * 回到默认行间距
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    defaultLineHeight(): EscPosEncoder;
     /**
      * 打印一行字符
      *

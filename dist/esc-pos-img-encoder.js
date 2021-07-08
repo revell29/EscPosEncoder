@@ -42,6 +42,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         _this.cutAtFinal = false;
         _this.fontFoot = 16; // 给字体下方留下空间，防止截断
         _this.fontFamily = "Custom";
+        _this.lineHeightInterval = 0;
         if (fontFamily) {
             _this.fontFamily = fontFamily;
         }
@@ -86,15 +87,15 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         switch (value) {
             case 0: // 正常字体
                 this.fontValue = "28px \"" + this.fontFamily + "\"";
-                this.lineHeight = this.lineHeight0;
+                this.lineHeight = this.lineHeight0 + this.lineHeightInterval;
                 break;
             case 1: // 高度加倍
                 this.fontValue = "28px \"" + this.fontFamily + "\"";
-                this.lineHeight = this.lineHeight0;
+                this.lineHeight = this.lineHeight0 + this.lineHeightInterval;
                 break;
             case 2: // 宽高都加倍
                 this.fontValue = "56px \"" + this.fontFamily + "\"";
-                this.lineHeight = this.lineHeight2;
+                this.lineHeight = this.lineHeight2 + this.lineHeightInterval;
                 break;
         }
         this.ctx.font = this.fontValue;
@@ -204,12 +205,19 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype.encode = function () {
-        this.image(this.CVS, this.CVS.width, this.CVS.height, 'threshold');
-        if (this.cutAtFinal) {
-            _super.prototype.cutPartial.call(this);
+        var result;
+        try {
+            this.image(this.CVS, this.CVS.width, this.CVS.height, 'threshold');
+            if (this.cutAtFinal) {
+                _super.prototype.cutPartial.call(this);
+            }
+            result = _super.prototype.encode.call(this);
+            this._reset();
         }
-        var result = _super.prototype.encode.call(this);
-        this._reset();
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
         return result;
     };
     /**
@@ -220,6 +228,29 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype.bold = function (value) {
+        return this;
+    };
+    /**
+     * 放大行间距
+     *
+     * @param  {boolean}          bigFont  是否大号字体
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    EscPosImgEncoder.prototype.enlargeLineHeight = function (bigFont) {
+        this.lineHeightInterval = bigFont ? 2 * 8 : 1 * 8;
+        this.size(this._size);
+        return this;
+    };
+    /**
+     * 回到默认行间距
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    EscPosImgEncoder.prototype.defaultLineHeight = function () {
+        this.lineHeightInterval = 0;
+        this.size(this._size);
         return this;
     };
     /**

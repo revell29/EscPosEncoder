@@ -450,6 +450,32 @@ var EscPosEncoder = /** @class */ (function () {
         return this;
     };
     /**
+     * 设置行间距
+     *
+     * @param  {boolean}          bigFont  是否大号字体
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    EscPosEncoder.prototype.enlargeLineHeight = function (bigFont) {
+        var height = bigFont ? 130 : 80;
+        this._queue([
+            0x1b, 0x33, height,
+        ]);
+        return this;
+    };
+    /**
+     * 回到默认行间距
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    EscPosEncoder.prototype.defaultLineHeight = function () {
+        this._queue([
+            0x1b, 0x32, 0,
+        ]);
+        return this;
+    };
+    /**
      * Change text size
      *
      * @param  {number}          value   small or normal
