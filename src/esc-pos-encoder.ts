@@ -499,7 +499,8 @@ export default class EscPosEncoder {
      *
      */
     enlargeLineHeight(bigFont: boolean): EscPosEncoder {
-      const height=bigFont?130:80;
+      const height=bigFont?47:30;
+      this._queue([0x1d, 0x50, 0x00, 127]);
       this._queue([
         0x1b, 0x33, height,
       ]);
