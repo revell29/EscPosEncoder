@@ -11,7 +11,7 @@ enum AlignEnum {
  * Create a byte stream based on commands for ESC/POS printers
  */
 export default class EscPosImgEncoder extends EscPosEncoder {
-  private CVS: HTMLCanvasElement = document.createElement('canvas');
+  private CVS: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D
   private alignValue: AlignEnum = AlignEnum.left
   private fontValue = '28px "Custom"';
@@ -25,13 +25,19 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   private fontFoot = 16; // 给字体下方留下空间，防止截断
   private fontFamily = "Custom";
   private lineHeightInterval = 0;
+  private rtl = false;
 
 
   /**
    * Create a new EscPosEncoder
    */
-  constructor(fontFamily?) {
+  constructor({fontFamily,canvas,rtl=false}:{fontFamily?:string,canvas:HTMLCanvasElement,rtl?:boolean}) {
     super();
+    this.CVS = canvas;
+    if(rtl) {
+      this.rtl = true;
+      this.CVS.setAttribute('dir','rtl')
+    }
     if (fontFamily) {
       this.fontFamily = fontFamily;
     }
@@ -157,13 +163,13 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     const { width } = this.ctx.measureText(value);
     switch (this.alignValue) {
       case AlignEnum.left:
-        this.ctx.fillText(value, 0, this.heightPosition);
+        this.ctx.fillText(value, this.getPositionByDir(0), this.heightPosition);
         break;
       case AlignEnum.center:
-        this.ctx.fillText(value, (this.CVS.width - width) / 2, this.heightPosition);
+        this.ctx.fillText(value,this.getPositionByDir((this.CVS.width - width) / 2), this.heightPosition);
         break;
       case AlignEnum.right:
-        this.ctx.fillText(value, this.CVS.width - width, this.heightPosition);
+        this.ctx.fillText(value, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
         break;
       default:
         throw new Error('align error');
@@ -303,8 +309,8 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   oneLine(str1: string, str2: string): EscPosEncoder {
     this.newline();
     const { width } = this.ctx.measureText(str2);
-    this.ctx.fillText(str1, 0, this.heightPosition);
-    this.ctx.fillText(str2, this.CVS.width - width, this.heightPosition);
+    this.ctx.fillText(str1, this.getPositionByDir(0), this.heightPosition);
+    this.ctx.fillText(str2, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
     return this;
   }
 
@@ -323,7 +329,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     const { width: countAndPriceLength } = this.ctx.measureText(measureTextStr);
     const getCountAndPriceStr = (count: number, price: number): string => {
       const priceStr = bigPrice ? this.bigPriceFormat(price) : price.toFixed(2);
-      const countStr = 'x' + count;
+      const countStr = (this.rtl?'*':'x') + count;
       const spaceNum = (countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(priceStr)) / this.getStrWidth(' ');
       return countStr + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + priceStr;
     };
@@ -423,5 +429,19 @@ export default class EscPosImgEncoder extends EscPosEncoder {
       this.resize(this.CVS.width, this.heightPosition);
     }
     return this;
+  }
+
+  /**
+   * 根据打印方向返回打印机位置
+   *
+   * @param {number} pos 正常打印位置
+   * @returns {number}  根据打印方向的打印机位置
+   */
+  private getPositionByDir(pos:number):number{
+    if(this.rtl) {
+      return this.CVS.width - pos;
+    }else {
+      return pos
+    }
   }
 }

@@ -22,10 +22,15 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     private fontFoot;
     private fontFamily;
     private lineHeightInterval;
+    private rtl;
     /**
      * Create a new EscPosEncoder
      */
-    constructor(fontFamily?: any);
+    constructor({ fontFamily, canvas, rtl }: {
+        fontFamily?: string;
+        canvas: HTMLCanvasElement;
+        rtl?: boolean;
+    });
     /**
      * Reset the state of the EscPosEncoder
      *
@@ -195,5 +200,12 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
     emptyLine(num?: number): EscPosEncoder;
+    /**
+     * 根据打印方向返回打印机位置
+     *
+     * @param {number} pos 正常打印位置
+     * @returns {number}  根据打印方向的打印机位置
+     */
+    private getPositionByDir;
 }
 export {};

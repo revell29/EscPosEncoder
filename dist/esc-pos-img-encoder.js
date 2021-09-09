@@ -28,9 +28,9 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     /**
      * Create a new EscPosEncoder
      */
-    function EscPosImgEncoder(fontFamily) {
+    function EscPosImgEncoder(_a) {
+        var fontFamily = _a.fontFamily, canvas = _a.canvas, _b = _a.rtl, rtl = _b === void 0 ? false : _b;
         var _this = _super.call(this) || this;
-        _this.CVS = document.createElement('canvas');
         _this.alignValue = AlignEnum.left;
         _this.fontValue = '28px "Custom"';
         _this.width58 = 384;
@@ -43,6 +43,12 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         _this.fontFoot = 16; // 给字体下方留下空间，防止截断
         _this.fontFamily = "Custom";
         _this.lineHeightInterval = 0;
+        _this.rtl = false;
+        _this.CVS = canvas;
+        if (rtl) {
+            _this.rtl = true;
+            _this.CVS.setAttribute('dir', 'rtl');
+        }
         if (fontFamily) {
             _this.fontFamily = fontFamily;
         }
@@ -161,13 +167,13 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var width = this.ctx.measureText(value).width;
         switch (this.alignValue) {
             case AlignEnum.left:
-                this.ctx.fillText(value, 0, this.heightPosition);
+                this.ctx.fillText(value, this.getPositionByDir(0), this.heightPosition);
                 break;
             case AlignEnum.center:
-                this.ctx.fillText(value, (this.CVS.width - width) / 2, this.heightPosition);
+                this.ctx.fillText(value, this.getPositionByDir((this.CVS.width - width) / 2), this.heightPosition);
                 break;
             case AlignEnum.right:
-                this.ctx.fillText(value, this.CVS.width - width, this.heightPosition);
+                this.ctx.fillText(value, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
                 break;
             default:
                 throw new Error('align error');
@@ -302,8 +308,8 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     EscPosImgEncoder.prototype.oneLine = function (str1, str2) {
         this.newline();
         var width = this.ctx.measureText(str2).width;
-        this.ctx.fillText(str1, 0, this.heightPosition);
-        this.ctx.fillText(str2, this.CVS.width - width, this.heightPosition);
+        this.ctx.fillText(str1, this.getPositionByDir(0), this.heightPosition);
+        this.ctx.fillText(str2, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
         return this;
     };
     /**
@@ -323,7 +329,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var countAndPriceLength = this.ctx.measureText(measureTextStr).width;
         var getCountAndPriceStr = function (count, price) {
             var priceStr = bigPrice ? _this.bigPriceFormat(price) : price.toFixed(2);
-            var countStr = 'x' + count;
+            var countStr = (_this.rtl ? '*' : 'x') + count;
             var spaceNum = (countAndPriceLength - _this.getStrWidth(countStr) - _this.getStrWidth(priceStr)) / _this.getStrWidth(' ');
             return countStr + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + priceStr;
         };
@@ -418,6 +424,20 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
             this.resize(this.CVS.width, this.heightPosition);
         }
         return this;
+    };
+    /**
+     * 根据打印方向返回打印机位置
+     *
+     * @param {number} pos 正常打印位置
+     * @returns {number}  根据打印方向的打印机位置
+     */
+    EscPosImgEncoder.prototype.getPositionByDir = function (pos) {
+        if (this.rtl) {
+            return this.CVS.width - pos;
+        }
+        else {
+            return pos;
+        }
     };
     return EscPosImgEncoder;
 }(esc_pos_encoder_1.default));
