@@ -107,11 +107,19 @@ export default class EscPosEncoder {
      * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printFrontDeskDishs(dishes: {
-        name: string;
-        count: number;
-        price: number;
-    }[], size?: number, bigPrice?: boolean): EscPosEncoder;
+    printFrontDeskDishs({ dishes, size, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine }: {
+        dishes: {
+            name: string;
+            count: number;
+            price: number;
+            specifications: string[];
+        }[];
+        size: number;
+        bigPrice: boolean;
+        largeLineHeight: boolean;
+        lineBetweenDishes: boolean;
+        specificationInNewLine: boolean;
+    }): EscPosEncoder;
     /**
      * 后厨打印菜品，包含菜品名称，数量，不包含价格
      *
@@ -119,10 +127,18 @@ export default class EscPosEncoder {
      * @param {number} size 字体大小,默认2
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printChefDishs(dishes: {
-        name: string;
-        count: number;
-    }[], size?: number): EscPosEncoder;
+    printChefDishs({ dishes, size, largeLineHeight, lineBetweenDishes, specificationInNewLine, countFront }: {
+        dishes: {
+            name: string;
+            count: number;
+            specifications: string[];
+        }[];
+        size: number;
+        largeLineHeight: boolean;
+        lineBetweenDishes: boolean;
+        specificationInNewLine: boolean;
+        countFront: boolean;
+    }): EscPosEncoder;
     /**
      * Change the code page
      *

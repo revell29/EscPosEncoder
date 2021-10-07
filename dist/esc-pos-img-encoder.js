@@ -320,10 +320,9 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    EscPosImgEncoder.prototype.printFrontDeskDishs = function (dishes, size, bigPrice) {
+    EscPosImgEncoder.prototype.printFrontDeskDishs = function (_a) {
         var _this = this;
-        if (size === void 0) { size = 1; }
-        if (bigPrice === void 0) { bigPrice = false; }
+        var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine;
         var originSize = this._size;
         var measureTextStr = bigPrice ? 'x99 9,999,999' : 'x99 999.99';
         var countAndPriceLength = this.ctx.measureText(measureTextStr).width;
@@ -334,7 +333,11 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
             return countStr + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + priceStr;
         };
         this.size(size);
-        dishes.forEach(function (dish) {
+        if (largeLineHeight) {
+            this.enlargeLineHeight(Boolean(size));
+        }
+        dishes.forEach(function (dish, index) {
+            var _a;
             if (dish.count <= 0) {
                 return;
             }
@@ -347,7 +350,28 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
                     _this.line(str);
                 }
             });
+            if (specificationInNewLine) {
+                (_a = dish.specifications) === null || _a === void 0 ? void 0 : _a.forEach(function (str, index) {
+                    if (str) {
+                        _this.line('    ※ ' + str + ' ※');
+                    }
+                });
+            }
+            if (lineBetweenDishes) {
+                _this.defaultLineHeight();
+                _this.size(0);
+                if (dishes.length !== index + 1) {
+                    _this.printLine('-');
+                }
+                _this.size(size);
+                if (largeLineHeight) {
+                    _this.enlargeLineHeight(Boolean(size));
+                }
+            }
         });
+        this.size(0);
+        this.defaultLineHeight();
+        this.printLine('=');
         this.size(originSize);
         return this;
     };
@@ -358,26 +382,60 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      * @param {number} size 字体大小,默认2
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    EscPosImgEncoder.prototype.printChefDishs = function (dishes, size) {
+    EscPosImgEncoder.prototype.printChefDishs = function (_a) {
         var _this = this;
-        if (size === void 0) { size = 2; }
+        var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 2 : _b, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine, countFront = _a.countFront;
         var originSize = this._size;
         var countAndPriceLength = this.ctx.measureText('  x99').width;
         this.size(size);
-        dishes.forEach(function (dish) {
-            var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.CVS.width - countAndPriceLength);
-            fixedWidthStrArr.forEach(function (str, index) {
-                if (dish.count <= 0) {
-                    return;
-                }
-                if (index === 0) {
-                    _this.oneLine(str, "x" + dish.count);
+        if (largeLineHeight) {
+            this.enlargeLineHeight(Boolean(size));
+        }
+        dishes.forEach(function (dish, index) {
+            var _a;
+            if (dish.count <= 0) {
+                return;
+            }
+            if (countFront) {
+                _this.line((dish.count > 1 ? dish.count + "x    " : '') + dish.name);
+            }
+            else {
+                var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.CVS.width - countAndPriceLength);
+                fixedWidthStrArr.forEach(function (str, index) {
+                    if (dish.count <= 0) {
+                        return;
+                    }
+                    if (index === 0) {
+                        _this.oneLine(str, "x" + dish.count);
+                    }
+                    else {
+                        _this.line(str);
+                    }
+                });
+            }
+            if (specificationInNewLine) {
+                (_a = dish.specifications) === null || _a === void 0 ? void 0 : _a.forEach(function (str, index) {
+                    if (str) {
+                        _this.line('    ※ ' + str + ' ※');
+                    }
+                });
+            }
+            if (lineBetweenDishes) {
+                _this.defaultLineHeight();
+                _this.size(0);
+                if (dishes.length !== index + 1) {
+                    _this.printLine('-');
                 }
                 else {
-                    _this.line(str);
+                    // this.printLine('=');
                 }
-            });
+                _this.size(size);
+                if (largeLineHeight) {
+                    _this.enlargeLineHeight(Boolean(size));
+                }
+            }
         });
+        this.defaultLineHeight();
         this.size(originSize);
         return this;
     };

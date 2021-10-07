@@ -323,7 +323,14 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    * @param {boolean} bigPrice 小币种价格，默认false
    * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
    */
-  printFrontDeskDishs(dishes: { name: string; count: number; price: number }[], size = 1, bigPrice = false): EscPosEncoder {
+  printFrontDeskDishs({dishes, size=1, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine}: {
+    dishes: {name: string; count: number; price: number; specifications: string[]}[];
+    size: number;
+    bigPrice: boolean;
+    largeLineHeight: boolean;
+    lineBetweenDishes: boolean;
+    specificationInNewLine: boolean;
+  }): EscPosEncoder {
     const originSize = this._size;
     const measureTextStr = bigPrice ? 'x99 9,999,999' : 'x99 999.99';
     const { width: countAndPriceLength } = this.ctx.measureText(measureTextStr);
@@ -334,7 +341,10 @@ export default class EscPosImgEncoder extends EscPosEncoder {
       return countStr + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + priceStr;
     };
     this.size(size);
-    dishes.forEach((dish) => {
+    if (largeLineHeight) {
+      this.enlargeLineHeight(Boolean(size));
+    }
+    dishes.forEach((dish,index) => {
       if (dish.count <= 0) {
         return;
       }
@@ -349,7 +359,28 @@ export default class EscPosImgEncoder extends EscPosEncoder {
           this.line(str);
         }
       });
+      if (specificationInNewLine) {
+        dish.specifications?.forEach((str, index) => {
+          if (str) {
+            this.line('    ※ '+str+' ※');
+          }
+        });
+      }
+      if (lineBetweenDishes) {
+        this.defaultLineHeight();
+        this.size(0);
+        if (dishes.length !== index+1) {
+          this.printLine('-');
+        }
+        this.size(size);
+        if (largeLineHeight) {
+          this.enlargeLineHeight(Boolean(size));
+        }
+      }
     });
+    this.size(0);
+    this.defaultLineHeight();
+    this.printLine('=');
     this.size(originSize);
     return this;
   }
@@ -361,26 +392,64 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    * @param {number} size 字体大小,默认2
    * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
    */
-  printChefDishs(dishes: { name: string; count: number }[], size = 2): EscPosEncoder {
+  printChefDishs({dishes, size=2, largeLineHeight, lineBetweenDishes, specificationInNewLine,countFront}: {
+    dishes: {name: string; count: number; specifications: string[]}[];
+    size: number;
+    largeLineHeight: boolean;
+    lineBetweenDishes: boolean;
+    specificationInNewLine: boolean;
+    countFront: boolean;
+  }): EscPosEncoder {
     const originSize = this._size;
     const { width: countAndPriceLength } = this.ctx.measureText('  x99');
     this.size(size);
-    dishes.forEach((dish) => {
-      const fixedWidthStrArr = this.splitByWidth(
-        dish.name,
-        this.CVS.width - countAndPriceLength
-      );
-      fixedWidthStrArr.forEach((str, index) => {
-        if (dish.count <= 0) {
-          return;
-        }
-        if (index === 0) {
-          this.oneLine(str, `x${dish.count}`);
+    if (largeLineHeight) {
+      this.enlargeLineHeight(Boolean(size));
+    }
+    dishes.forEach((dish,index) => {
+      if (dish.count<=0) {
+        return;
+      }
+      if(countFront){
+        this.line((dish.count>1?`${dish.count}x    `:'')+dish.name);
+      }else {
+        const fixedWidthStrArr = this.splitByWidth(
+          dish.name,
+          this.CVS.width - countAndPriceLength
+        );
+        fixedWidthStrArr.forEach((str, index) => {
+          if (dish.count <= 0) {
+            return;
+          }
+          if (index === 0) {
+            this.oneLine(str, `x${dish.count}`);
+          } else {
+            this.line(str);
+          }
+        });
+      }
+      if (specificationInNewLine) {
+        dish.specifications?.forEach((str, index) => {
+          if (str) {
+            this.line('    ※ '+str+' ※');
+          }
+        });
+      }
+      if (lineBetweenDishes) {
+        this.defaultLineHeight();
+        this.size(0);
+        if (dishes.length !== index+1) {
+          this.printLine('-');
         } else {
-          this.line(str);
+          // this.printLine('=');
         }
-      });
+        this.size(size);
+        if (largeLineHeight) {
+          this.enlargeLineHeight(Boolean(size));
+        }
+      }
     });
+    this.defaultLineHeight();
     this.size(originSize);
     return this;
   }
