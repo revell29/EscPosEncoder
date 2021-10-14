@@ -104,6 +104,7 @@ var EscPosEncoder = /** @class */ (function () {
      * @returns {Array} 返回被分割的字符串数组
      */
     EscPosEncoder.prototype.splitByWidth = function (str, maxLength) {
+        if (str === void 0) { str = ''; }
         var width = 0;
         var result = [];
         for (var i = 0; i < str.length; i++) {

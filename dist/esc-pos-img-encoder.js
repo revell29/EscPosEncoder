@@ -447,6 +447,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      * @returns {Array} 返回被分割的字符串数组
      */
     EscPosImgEncoder.prototype.splitByWidth = function (str, maxLength) {
+        if (str === void 0) { str = ''; }
         var result = [];
         for (var i = 0; i < str.length; i++) {
             var char = str.slice(0, i);

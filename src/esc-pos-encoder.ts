@@ -119,7 +119,7 @@ export default class EscPosEncoder {
      * @param  {number}   maxLength  分割长度
      * @returns {Array} 返回被分割的字符串数组
      */
-    protected splitByWidth(str: string, maxLength: number): string[] {
+    protected splitByWidth(str='', maxLength: number): string[] {
       let width = 0;
       let result: string[] = [];
       for (let i = 0; i < str.length; i++) {
