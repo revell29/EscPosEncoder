@@ -37,6 +37,9 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     if(rtl) {
       this.rtl = true;
       this.CVS.setAttribute('dir','rtl')
+    }else {
+      this.rtl = false;
+      this.CVS.setAttribute('dir','ltr')
     }
     if (fontFamily) {
       this.fontFamily = fontFamily;

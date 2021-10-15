@@ -49,6 +49,10 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
             _this.rtl = true;
             _this.CVS.setAttribute('dir', 'rtl');
         }
+        else {
+            _this.rtl = false;
+            _this.CVS.setAttribute('dir', 'ltr');
+        }
         if (fontFamily) {
             _this.fontFamily = fontFamily;
         }
