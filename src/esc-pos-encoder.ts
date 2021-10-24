@@ -91,7 +91,7 @@ export default class EscPosEncoder {
      * @param  {Array}   value  And array of numbers, arrays, buffers or Uint8Arrays to add to the buffer
      *
      */
-    private _queue(value): void {
+    protected _queue(value): void {
       value.forEach((item) => this._buffer.push(item));
     }
 
@@ -870,9 +870,6 @@ export default class EscPosEncoder {
                       getPixel(x + 7, y);
         }
       }
-
-      // 在打印位图之前把打印缓冲区里的数据打印清空
-      this._queue([0x1B, 0x4A, 0x00]);
       this._queue([
         0x1d, 0x76, 0x30, 0x00,
         (width >> 3) & 0xff, (((width >> 3) >> 8) & 0xff),

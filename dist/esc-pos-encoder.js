@@ -782,8 +782,6 @@ var EscPosEncoder = /** @class */ (function () {
                         getPixel(x + 7, y);
             }
         }
-        // 在打印位图之前把打印缓冲区里的数据打印清空
-        this._queue([0x1B, 0x4A, 0x00]);
         this._queue([
             0x1d, 0x76, 0x30, 0x00,
             (width >> 3) & 0xff, (((width >> 3) >> 8) & 0xff),

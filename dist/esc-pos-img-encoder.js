@@ -217,7 +217,11 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     EscPosImgEncoder.prototype.encode = function () {
         var result;
         try {
+            // 进入页模式
+            this._queue([0x1B, 0x4c]);
             this.image(this.CVS, this.CVS.width, this.CVS.height, 'threshold');
+            // 打印并退出页模式
+            this._queue([0x0C]);
             if (this.cutAtFinal) {
                 _super.prototype.cutPartial.call(this);
             }

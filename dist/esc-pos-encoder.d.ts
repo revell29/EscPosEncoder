@@ -46,7 +46,7 @@ export default class EscPosEncoder {
      * @param  {Array}   value  And array of numbers, arrays, buffers or Uint8Arrays to add to the buffer
      *
      */
-    private _queue;
+    protected _queue(value: any): void;
     /**
      * 获取单个字符的字节数，也就是打印占宽
      *
