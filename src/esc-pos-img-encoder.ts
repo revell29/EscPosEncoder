@@ -216,10 +216,24 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     let result;
     try {
       // 进入页模式
-      this._queue([0x1B, 0x4c]);
-      this.image(this.CVS, this.CVS.width, this.CVS.height, 'threshold');
+      // this._queue([0x1B, 0x4c]);
+      const interval = 1000; // 每个图片的最大高度
+      const count = Math.ceil(this.CVS.height/interval); // 打碎成多少个图片的拼接
+      for(let i=0;i<count;i++) {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.CVS.width;
+        if(i===count-1) {
+          // 最后一张图片的高度
+          canvas.height = this.CVS.height-i*interval;
+        }else{
+          canvas.height = interval;
+        }
+        const context = canvas.getContext('2d');
+        context.drawImage(this.CVS, 0, i*interval,canvas.width,canvas.height,0,0 ,canvas.width, canvas.height);
+        this.image(canvas, canvas.width, canvas.height, 'threshold');
+      }
       // 打印并退出页模式
-      this._queue([0x0C]);
+      // this._queue([0x0C]);
       if (this.cutAtFinal) {
         super.cutPartial();
       }
