@@ -215,8 +215,8 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   encode(): Uint8Array {
     let result;
     try {
-      // 进入页模式
-      // this._queue([0x1B, 0x4c]);
+      // 初始化打印机，防止持续乱码
+      this._queue([0x1B, 0x40]);
       const interval = 1000; // 每个图片的最大高度
       const count = Math.ceil(this.CVS.height/interval); // 打碎成多少个图片的拼接
       for(let i=0;i<count;i++) {
@@ -232,8 +232,6 @@ export default class EscPosImgEncoder extends EscPosEncoder {
         context.drawImage(this.CVS, 0, i*interval,canvas.width,canvas.height,0,0 ,canvas.width, canvas.height);
         this.image(canvas, canvas.width, canvas.height, 'threshold');
       }
-      // 打印并退出页模式
-      // this._queue([0x0C]);
       if (this.cutAtFinal) {
         super.cutPartial();
       }

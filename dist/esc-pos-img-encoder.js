@@ -217,8 +217,8 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     EscPosImgEncoder.prototype.encode = function () {
         var result;
         try {
-            // 进入页模式
-            // this._queue([0x1B, 0x4c]);
+            // 初始化打印机，防止持续乱码
+            this._queue([0x1B, 0x40]);
             var interval = 1000; // 每个图片的最大高度
             var count = Math.ceil(this.CVS.height / interval); // 打碎成多少个图片的拼接
             for (var i = 0; i < count; i++) {
@@ -235,8 +235,6 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
                 context.drawImage(this.CVS, 0, i * interval, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
                 this.image(canvas, canvas.width, canvas.height, 'threshold');
             }
-            // 打印并退出页模式
-            // this._queue([0x0C]);
             if (this.cutAtFinal) {
                 _super.prototype.cutPartial.call(this);
             }
