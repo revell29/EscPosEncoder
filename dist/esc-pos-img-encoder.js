@@ -70,7 +70,6 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
             this.ctx = this.CVS.getContext('2d');
             this.ctx.textBaseline = 'bottom';
             this.resize(this.width58, 0);
-            console.log('_reset', this.CVS);
         }
         _super.prototype._reset.call(this);
     };
@@ -82,7 +81,6 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype.codepage = function (value) {
-        console.log('codepage', this.CVS);
         return this;
     };
     /**
@@ -139,7 +137,6 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
             throw new Error('Unknown alignment');
         }
         this.alignValue = value;
-        console.log('align', this.alignValue);
         return this;
     };
     /**

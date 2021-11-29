@@ -58,7 +58,6 @@ export default class EscPosImgEncoder extends EscPosEncoder {
       this.ctx = this.CVS.getContext('2d');
       this.ctx.textBaseline = 'bottom';
       this.resize(this.width58, 0);
-      console.log('_reset', this.CVS);
     }
     super._reset();
   }
@@ -71,7 +70,6 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    *
    */
   codepage(value: string): EscPosEncoder {
-    console.log('codepage', this.CVS);
     return this;
   }
 
@@ -130,7 +128,6 @@ export default class EscPosImgEncoder extends EscPosEncoder {
       throw new Error('Unknown alignment');
     }
     this.alignValue = value as AlignEnum;
-    console.log('align', this.alignValue);
     return this;
   }
 
