@@ -324,10 +324,18 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype.oneLine = function (str1, str2) {
+        this.align(AlignEnum.left);
         this.newline();
-        var width = this.ctx.measureText(str2).width;
-        this.ctx.fillText(str1, this.getPositionByDir(0), this.heightPosition);
-        this.ctx.fillText(str2, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
+        var width1 = this.ctx.measureText(str1).width;
+        var width2 = this.ctx.measureText(str2).width;
+        if (this.CVS.width - width1 - width2 < 0) {
+            this.line(str1);
+            this.line(str2);
+        }
+        else {
+            this.ctx.fillText(str1, this.getPositionByDir(0), this.heightPosition);
+            this.ctx.fillText(str2, this.getPositionByDir(this.CVS.width - width2), this.heightPosition);
+        }
         return this;
     };
     /**

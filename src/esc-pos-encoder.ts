@@ -489,8 +489,14 @@ export default class EscPosEncoder {
      *
      */
     oneLine(str1: string, str2: string): EscPosEncoder {
+      this.align('left');
       const spaceNum = this.singleCharLengthPerLine - this.getStrWidth(str1) - this.getStrWidth(str2);
-      this.line(str1 + ' '.repeat(spaceNum<0?0:spaceNum) + str2);
+      if (spaceNum>=0) {
+        this.line(str1 + ' '.repeat(spaceNum) + str2);
+      } else {
+        this.line(str1);
+        this.line(str2);
+      }
       return this;
     }
 

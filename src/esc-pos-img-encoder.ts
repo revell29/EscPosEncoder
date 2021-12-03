@@ -323,10 +323,17 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    *
    */
   oneLine(str1: string, str2: string): EscPosEncoder {
+    this.align(AlignEnum.left)
     this.newline();
-    const { width } = this.ctx.measureText(str2);
-    this.ctx.fillText(str1, this.getPositionByDir(0), this.heightPosition);
-    this.ctx.fillText(str2, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
+    const { width:width1 } = this.ctx.measureText(str1);
+    const { width:width2 } = this.ctx.measureText(str2);
+    if(this.CVS.width-width1-width2<0) {
+      this.line(str1)
+      this.line(str2)
+    }else {
+      this.ctx.fillText(str1, this.getPositionByDir(0), this.heightPosition);
+      this.ctx.fillText(str2, this.getPositionByDir(this.CVS.width - width2), this.heightPosition);
+    }
     return this;
   }
 
