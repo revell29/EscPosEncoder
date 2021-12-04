@@ -132,7 +132,7 @@ var TsplLabelEncoder = /** @class */ (function () {
             case 1: // 高度加倍
                 this.ctx.font = '48px "Custom"';
                 this.ctx.transform(.5, 0, 0, 1, 0, 0);
-                this.ctx.fillText(value, x, y);
+                this.ctx.fillText(value, x * 2, y);
                 this.ctx.transform(2, 0, 0, 1, 0, 0);
                 break;
             case 2: // 宽高都加倍
