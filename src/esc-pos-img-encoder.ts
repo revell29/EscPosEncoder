@@ -88,8 +88,8 @@ export default class EscPosImgEncoder extends EscPosEncoder {
         this.lineHeight = this.lineHeight0 + this.lineHeightInterval;
         break;
       case 1:// 高度加倍
-        this.fontValue = `28px "${this.fontFamily}"`;
-        this.lineHeight = this.lineHeight0 + this.lineHeightInterval;
+        this.fontValue = `56px "${this.fontFamily}"`;
+        this.lineHeight = this.lineHeight2 + this.lineHeightInterval;
         break;
       case 2:// 宽高都加倍
         this.fontValue = `56px "${this.fontFamily}"`;
@@ -160,21 +160,39 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    *
    */
   text(value: string, wrap?: number): EscPosEncoder {
-    const { width } = this.ctx.measureText(value);
+    const width = this.getStrWidth(value);
     switch (this.alignValue) {
       case AlignEnum.left:
-        this.ctx.fillText(value, this.getPositionByDir(0), this.heightPosition);
+        this._fillText(value, this.getPositionByDir(0), this.heightPosition);
         break;
       case AlignEnum.center:
-        this.ctx.fillText(value,this.getPositionByDir((this.CVS.width - width) / 2), this.heightPosition);
+        this._fillText(value,this.getPositionByDir((this.CVS.width - width) / 2), this.heightPosition);
         break;
       case AlignEnum.right:
-        this.ctx.fillText(value, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
+        this._fillText(value, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
         break;
       default:
         throw new Error('align error');
     }
     return this;
+  }
+
+    /**
+   * fill text
+   *
+   * @param  {string}   value  Text that needs to be printed
+   * @param  {number}   wrap   Wrap text after this many positions
+   * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
+   *
+   */
+  private _fillText(text,x,y){
+    if(this._size === 1) {
+      this.ctx.transform(.5, 0, 0, 1, 0, 0);
+      this.ctx.fillText(text, x*2, y);
+      this.ctx.transform(2, 0, 0, 1, 0, 0);
+    }else {
+      this.ctx.fillText(text, x, y);
+    }
   }
 
   /**
@@ -325,14 +343,14 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   oneLine(str1: string, str2: string): EscPosEncoder {
     this.align(AlignEnum.left)
     this.newline();
-    const { width:width1 } = this.ctx.measureText(str1);
-    const { width:width2 } = this.ctx.measureText(str2);
+    const width1 = this.getStrWidth(str1);
+    const width2 = this.getStrWidth(str2);
     if(this.CVS.width-width1-width2<0) {
       this.line(str1)
       this.line(str2)
     }else {
-      this.ctx.fillText(str1, this.getPositionByDir(0), this.heightPosition);
-      this.ctx.fillText(str2, this.getPositionByDir(this.CVS.width - width2), this.heightPosition);
+      this._fillText(str1, this.getPositionByDir(0), this.heightPosition);
+      this._fillText(str2, this.getPositionByDir(this.CVS.width - width2), this.heightPosition);
     }
     return this;
   }
@@ -356,7 +374,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
   }): EscPosEncoder {
     const originSize = this._size;
     const measureTextStr = bigPrice ? 'x99 9,999,999' : 'x99 999.99';
-    const { width: countAndPriceLength } = this.ctx.measureText(measureTextStr);
+    const countAndPriceLength = this.getStrWidth(measureTextStr);
     const getCountAndPriceStr = (count: number, price: number): string => {
       const priceStr = bigPrice ? this.bigPriceFormat(price) : price.toFixed(2);
       const countStr = (this.rtl?'*':'x') + count;
@@ -424,7 +442,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     countFront: boolean;
   }): EscPosEncoder {
     const originSize = this._size;
-    const { width: countAndPriceLength } = this.ctx.measureText('  x99');
+    const countAndPriceLength = this.getStrWidth('  x99');
     this.size(size);
     if (largeLineHeight) {
       this.enlargeLineHeight(Boolean(size));
@@ -488,7 +506,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     let result: string[] = [];
     for (let i = 0; i < str.length; i++) {
       const char = str.slice(0, i);
-      const { width } = this.ctx.measureText(char);
+      const width = this.getStrWidth(char);
       if (width > maxLength) {
         result.push(str.slice(0, i - 1));
         result = result.concat(this.splitByWidth(str.slice(i - 1), maxLength));
@@ -505,7 +523,10 @@ export default class EscPosImgEncoder extends EscPosEncoder {
    * @returns {number} 返回被分割的字符串数组
    */
   protected getStrWidth(str: string): number {
-    const { width } = this.ctx.measureText(str);
+    let { width } = this.ctx.measureText(str);
+    if(this._size===1) {
+      width = width /2
+    }
     return width;
   }
 

@@ -98,8 +98,8 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
                 this.lineHeight = this.lineHeight0 + this.lineHeightInterval;
                 break;
             case 1: // 高度加倍
-                this.fontValue = "28px \"" + this.fontFamily + "\"";
-                this.lineHeight = this.lineHeight0 + this.lineHeightInterval;
+                this.fontValue = "56px \"" + this.fontFamily + "\"";
+                this.lineHeight = this.lineHeight2 + this.lineHeightInterval;
                 break;
             case 2: // 宽高都加倍
                 this.fontValue = "56px \"" + this.fontFamily + "\"";
@@ -165,21 +165,39 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype.text = function (value, wrap) {
-        var width = this.ctx.measureText(value).width;
+        var width = this.getStrWidth(value);
         switch (this.alignValue) {
             case AlignEnum.left:
-                this.ctx.fillText(value, this.getPositionByDir(0), this.heightPosition);
+                this._fillText(value, this.getPositionByDir(0), this.heightPosition);
                 break;
             case AlignEnum.center:
-                this.ctx.fillText(value, this.getPositionByDir((this.CVS.width - width) / 2), this.heightPosition);
+                this._fillText(value, this.getPositionByDir((this.CVS.width - width) / 2), this.heightPosition);
                 break;
             case AlignEnum.right:
-                this.ctx.fillText(value, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
+                this._fillText(value, this.getPositionByDir(this.CVS.width - width), this.heightPosition);
                 break;
             default:
                 throw new Error('align error');
         }
         return this;
+    };
+    /**
+   * fill text
+   *
+   * @param  {string}   value  Text that needs to be printed
+   * @param  {number}   wrap   Wrap text after this many positions
+   * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
+   *
+   */
+    EscPosImgEncoder.prototype._fillText = function (text, x, y) {
+        if (this._size === 1) {
+            this.ctx.transform(.5, 0, 0, 1, 0, 0);
+            this.ctx.fillText(text, x * 2, y);
+            this.ctx.transform(2, 0, 0, 1, 0, 0);
+        }
+        else {
+            this.ctx.fillText(text, x, y);
+        }
     };
     /**
      * Print a newline
@@ -326,15 +344,15 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     EscPosImgEncoder.prototype.oneLine = function (str1, str2) {
         this.align(AlignEnum.left);
         this.newline();
-        var width1 = this.ctx.measureText(str1).width;
-        var width2 = this.ctx.measureText(str2).width;
+        var width1 = this.getStrWidth(str1);
+        var width2 = this.getStrWidth(str2);
         if (this.CVS.width - width1 - width2 < 0) {
             this.line(str1);
             this.line(str2);
         }
         else {
-            this.ctx.fillText(str1, this.getPositionByDir(0), this.heightPosition);
-            this.ctx.fillText(str2, this.getPositionByDir(this.CVS.width - width2), this.heightPosition);
+            this._fillText(str1, this.getPositionByDir(0), this.heightPosition);
+            this._fillText(str2, this.getPositionByDir(this.CVS.width - width2), this.heightPosition);
         }
         return this;
     };
@@ -351,7 +369,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine;
         var originSize = this._size;
         var measureTextStr = bigPrice ? 'x99 9,999,999' : 'x99 999.99';
-        var countAndPriceLength = this.ctx.measureText(measureTextStr).width;
+        var countAndPriceLength = this.getStrWidth(measureTextStr);
         var getCountAndPriceStr = function (count, price) {
             var priceStr = bigPrice ? _this.bigPriceFormat(price) : price.toFixed(2);
             var countStr = (_this.rtl ? '*' : 'x') + count;
@@ -412,7 +430,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var _this = this;
         var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 2 : _b, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine, countFront = _a.countFront;
         var originSize = this._size;
-        var countAndPriceLength = this.ctx.measureText('  x99').width;
+        var countAndPriceLength = this.getStrWidth('  x99');
         this.size(size);
         if (largeLineHeight) {
             this.enlargeLineHeight(Boolean(size));
@@ -477,7 +495,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var result = [];
         for (var i = 0; i < str.length; i++) {
             var char = str.slice(0, i);
-            var width = this.ctx.measureText(char).width;
+            var width = this.getStrWidth(char);
             if (width > maxLength) {
                 result.push(str.slice(0, i - 1));
                 result = result.concat(this.splitByWidth(str.slice(i - 1), maxLength));
@@ -494,6 +512,9 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      */
     EscPosImgEncoder.prototype.getStrWidth = function (str) {
         var width = this.ctx.measureText(str).width;
+        if (this._size === 1) {
+            width = width / 2;
+        }
         return width;
     };
     /**

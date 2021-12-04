@@ -86,6 +86,15 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      */
     text(value: string, wrap?: number): EscPosEncoder;
     /**
+   * fill text
+   *
+   * @param  {string}   value  Text that needs to be printed
+   * @param  {number}   wrap   Wrap text after this many positions
+   * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
+   *
+   */
+    private _fillText;
+    /**
      * Print a newline
      *
      * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
