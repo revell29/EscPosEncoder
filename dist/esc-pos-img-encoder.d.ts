@@ -171,7 +171,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printFrontDeskDishs({ dishes, size, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine }: {
+    printFrontDeskDishs({ dishes, size, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine, showUnitPrice }: {
         dishes: {
             name: string;
             count: number;
@@ -183,6 +183,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
         largeLineHeight: boolean;
         lineBetweenDishes: boolean;
         specificationInNewLine: boolean;
+        showUnitPrice: boolean;
     }): EscPosEncoder;
     /**
      * 后厨打印菜品，包含菜品名称，数量，不包含价格
@@ -232,5 +233,14 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      * @returns {number}  根据打印方向的打印机位置
      */
     private getPositionByDir;
+    /**
+     * 拼接两个字符串到固定长度，自动中间加空格
+     *
+     * @param {string} str1   字符串1
+     * @param {string} str2   字符串2
+     * @param length
+     * @returns {string}   返回处理后的价格字符串
+     */
+    protected fixLength(str1: string, str2: string, length: number): string;
 }
 export {};

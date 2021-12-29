@@ -221,41 +221,53 @@ export default class EscPosEncoder {
      * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printFrontDeskDishs({dishes, size=1, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine}: {
+    printFrontDeskDishs({dishes, size=1, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine, showUnitPrice=true}: {
       dishes: {name: string; count: number; price: number; specifications: string[]}[];
       size: number;
       bigPrice: boolean;
       largeLineHeight: boolean;
       lineBetweenDishes: boolean;
       specificationInNewLine: boolean;
+      showUnitPrice: boolean;
     }): EscPosEncoder {
       const originSize = this._size;
-      const countAndPriceLength = bigPrice?13:10; // 价格和个数的长度
+      const countAndPriceLength = (bigPrice || showUnitPrice) ?13:10; // 价格和个数的长度
+      const countAndPriceLengthWithUnitPrice = 24; // 包含单价情况价格和个数的长度
       const getCountAndPriceStr = (count: number, price: number): string => {
-        const priceStr = bigPrice?this.bigPriceFormat(price):price.toFixed(2);
+        const unitPriceStr = bigPrice?this.bigPriceFormat(price):price.toFixed(2);
+        const totalPriceStr = bigPrice?this.bigPriceFormat(price*count):(price*count).toFixed(2);
         const countStr = 'x' + count;
-        const spaceNum = countAndPriceLength - this.getStrWidth(countStr) - this.getStrWidth(priceStr);
-        return countStr + ' '.repeat(spaceNum<0?0:spaceNum) + priceStr;
+        if (showUnitPrice) {
+          const countAndUnitPrice = this.fixLength(countStr, unitPriceStr, countAndPriceLength);
+          return this.fixLength(countAndUnitPrice, totalPriceStr, countAndPriceLengthWithUnitPrice);
+        } else {
+          return this.fixLength(countStr, totalPriceStr, countAndPriceLength);
+        }
       };
       this.size(size);
       if (largeLineHeight) {
         this.enlargeLineHeight(Boolean(size));
       }
       dishes.forEach((dish, index) => {
-        if (dish.count<=0) {
+        if (dish.count <= 0) {
           return;
         }
-        const fixedWidthStrArr = this.splitByWidth(
-            dish.name,
-            this.singleCharLengthPerLine-countAndPriceLength-2
-        );
-        fixedWidthStrArr.forEach((str, index) => {
-          if (index === 0) {
-            this.oneLine(str, getCountAndPriceStr(dish.count, dish.price * dish.count));
-          } else {
-            this.line(str);
-          }
-        });
+        if (showUnitPrice) {
+          this.line(dish.name);
+          this.oneLine('', getCountAndPriceStr(dish.count, dish.price));
+        } else {
+          const fixedWidthStrArr = this.splitByWidth(
+              dish.name,
+              this.singleCharLengthPerLine-countAndPriceLength-2
+          );
+          fixedWidthStrArr.forEach((str, index) => {
+            if (index === 0) {
+              this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+            } else {
+              this.line(str);
+            }
+          });
+        }
         if (specificationInNewLine) {
           dish.specifications?.forEach((str, index) => {
             if (str) {
@@ -992,5 +1004,18 @@ export default class EscPosEncoder {
         i++;
       }
       return removeTailPriceStrArr.reverse().join('');
+    }
+
+    /**
+     * 拼接两个字符串到固定长度，自动中间加空格
+     *
+     * @param {string} str1   字符串1
+     * @param {string} str2   字符串2
+     * @param length
+     * @returns {string}   返回处理后的价格字符串
+     */
+    protected fixLength(str1: string, str2: string, length: number): string {
+      const spaceNum = length - this.getStrWidth(str1) - this.getStrWidth(str2);
+      return str1 + ' '.repeat(spaceNum<0?0:spaceNum) + str2;
     }
 }

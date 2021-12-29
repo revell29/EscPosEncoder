@@ -366,15 +366,22 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      */
     EscPosImgEncoder.prototype.printFrontDeskDishs = function (_a) {
         var _this = this;
-        var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine;
+        var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine, _c = _a.showUnitPrice, showUnitPrice = _c === void 0 ? true : _c;
         var originSize = this._size;
-        var measureTextStr = bigPrice ? 'x99 9,999,999' : 'x99 999.99';
+        var measureTextStr = (bigPrice || showUnitPrice) ? 'x99 9,999,999' : 'x99 999.99';
         var countAndPriceLength = this.getStrWidth(measureTextStr);
+        var countAndPriceLengthWithUnitPrice = this.getStrWidth('99,999,999 x9 99,999,999'); // 包含单价情况价格和个数的长度
         var getCountAndPriceStr = function (count, price) {
-            var priceStr = bigPrice ? _this.bigPriceFormat(price) : price.toFixed(2);
+            var unitPriceStr = bigPrice ? _this.bigPriceFormat(price) : price.toFixed(2);
+            var totalPriceStr = bigPrice ? _this.bigPriceFormat(price * count) : (price * count).toFixed(2);
             var countStr = (_this.rtl ? '*' : 'x') + count;
-            var spaceNum = (countAndPriceLength - _this.getStrWidth(countStr) - _this.getStrWidth(priceStr)) / _this.getStrWidth(' ');
-            return countStr + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + priceStr;
+            if (showUnitPrice) {
+                var countAndUnitPrice = _this.fixLength(countStr, unitPriceStr, countAndPriceLength);
+                return _this.fixLength(countAndUnitPrice, totalPriceStr, countAndPriceLengthWithUnitPrice);
+            }
+            else {
+                return _this.fixLength(countStr, totalPriceStr, countAndPriceLength);
+            }
         };
         this.size(size);
         if (largeLineHeight) {
@@ -385,15 +392,21 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
             if (dish.count <= 0) {
                 return;
             }
-            var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.CVS.width - countAndPriceLength - _this.getStrWidth('  '));
-            fixedWidthStrArr.forEach(function (str, index) {
-                if (index === 0) {
-                    _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price * dish.count));
-                }
-                else {
-                    _this.line(str);
-                }
-            });
+            if (showUnitPrice) {
+                _this.line(dish.name);
+                _this.oneLine('', getCountAndPriceStr(dish.count, dish.price));
+            }
+            else {
+                var fixedWidthStrArr = _this.splitByWidth(dish.name, _this.CVS.width - countAndPriceLength - _this.getStrWidth('  '));
+                fixedWidthStrArr.forEach(function (str, index) {
+                    if (index === 0) {
+                        _this.oneLine(str, getCountAndPriceStr(dish.count, dish.price));
+                    }
+                    else {
+                        _this.line(str);
+                    }
+                });
+            }
             if (specificationInNewLine) {
                 (_a = dish.specifications) === null || _a === void 0 ? void 0 : _a.forEach(function (str, index) {
                     if (str) {
@@ -544,6 +557,18 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         else {
             return pos;
         }
+    };
+    /**
+     * 拼接两个字符串到固定长度，自动中间加空格
+     *
+     * @param {string} str1   字符串1
+     * @param {string} str2   字符串2
+     * @param length
+     * @returns {string}   返回处理后的价格字符串
+     */
+    EscPosImgEncoder.prototype.fixLength = function (str1, str2, length) {
+        var spaceNum = (length - this.getStrWidth(str1) - this.getStrWidth(str2)) / this.getStrWidth(' ');
+        return str1 + ' '.repeat(spaceNum < 0 ? 0 : spaceNum) + str2;
     };
     return EscPosImgEncoder;
 }(esc_pos_encoder_1.default));
