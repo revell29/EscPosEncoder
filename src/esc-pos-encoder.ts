@@ -221,7 +221,7 @@ export default class EscPosEncoder {
      * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printFrontDeskDishs({dishes, size=1, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine, showUnitPrice=true}: {
+    printFrontDeskDishs({dishes, size=1, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine, showUnitPrice}: {
       dishes: {name: string; count: number; price: number; specifications: string[]}[];
       size: number;
       bigPrice: boolean;
