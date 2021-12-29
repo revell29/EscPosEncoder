@@ -206,7 +206,7 @@ var EscPosEncoder = /** @class */ (function () {
      */
     EscPosEncoder.prototype.printFrontDeskDishs = function (_a) {
         var _this = this;
-        var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine, _c = _a.showUnitPrice, showUnitPrice = _c === void 0 ? true : _c;
+        var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine, showUnitPrice = _a.showUnitPrice;
         var originSize = this._size;
         var countAndPriceLength = (bigPrice || showUnitPrice) ? 13 : 10; // 价格和个数的长度
         var countAndPriceLengthWithUnitPrice = 24; // 包含单价情况价格和个数的长度

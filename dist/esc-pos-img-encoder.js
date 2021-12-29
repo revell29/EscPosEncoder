@@ -366,7 +366,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      */
     EscPosImgEncoder.prototype.printFrontDeskDishs = function (_a) {
         var _this = this;
-        var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine, _c = _a.showUnitPrice, showUnitPrice = _c === void 0 ? true : _c;
+        var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine, showUnitPrice = _a.showUnitPrice;
         var originSize = this._size;
         var measureTextStr = (bigPrice || showUnitPrice) ? 'x99 9,999,999' : 'x99 999.99';
         var countAndPriceLength = this.getStrWidth(measureTextStr);
