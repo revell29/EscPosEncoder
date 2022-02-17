@@ -3,6 +3,7 @@ declare module 'iconv-lite' {
 }
 export declare enum PrinterWidthEnum {
     '_58' = 58,
+    '_76' = 76,
     '_80' = 80
 }
 /**
@@ -14,6 +15,7 @@ export default class EscPosEncoder {
     private _state;
     protected _size: number;
     private _58printerParam;
+    private _76printerParam;
     private _80printerParam;
     private _printerParam;
     /**
@@ -107,7 +109,7 @@ export default class EscPosEncoder {
      * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printFrontDeskDishs({ dishes, size, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine, showUnitPrice }: {
+    printFrontDeskDishs({ dishes, size, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine, showUnitPrice, }: {
         dishes: {
             name: string;
             count: number;
@@ -128,7 +130,7 @@ export default class EscPosEncoder {
      * @param {number} size 字体大小,默认2
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printChefDishs({ dishes, size, largeLineHeight, lineBetweenDishes, specificationInNewLine, countFront }: {
+    printChefDishs({ dishes, size, largeLineHeight, lineBetweenDishes, specificationInNewLine, countFront, }: {
         dishes: {
             name: string;
             count: number;
