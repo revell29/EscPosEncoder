@@ -1,28 +1,20 @@
 {
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "ecmaVersion": 6,
-      "sourceType": "module"
-    },
-    "env": {
-      "node": true,
-      "es6": true,
-      "browser": true
-    },
-    "extends": [
-      "eslint:recommended",
-      "google",
-      "plugin:jsdoc/recommended",
-      "plugin:@typescript-eslint/recommended"
-    ],
-    "rules": {
-      "max-len": [
-        1,
-        120
-      ],
-      "valid-jsdoc": 0
-    },
-    "plugins": [
-      "jsdoc"
-    ]
-  }
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "env": {
+    "node": true,
+    "es6": true,
+    "browser": true
+  },
+  "extends": ["eslint:recommended", "google", "plugin:jsdoc/recommended", "plugin:@typescript-eslint/recommended"],
+  "rules": {
+    "quote-props": "off",
+    "object-curly-spacing": "off",
+    "max-len": [1, 120],
+    "valid-jsdoc": 0
+  },
+  "plugins": ["jsdoc"]
+}
