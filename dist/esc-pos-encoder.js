@@ -27,12 +27,12 @@ var EscPosEncoder = /** @class */ (function () {
         this._58printerParam = {
             width: 380,
             singleCharLength: 31,
-            doubleCharLength: 15,
+            doubleCharLength: 14,
         };
         this._76printerParam = {
-            width: 420,
-            singleCharLength: 38,
-            doubleCharLength: 17,
+            width: 380,
+            singleCharLength: 33,
+            doubleCharLength: 15,
         };
         this._80printerParam = {
             width: 500,

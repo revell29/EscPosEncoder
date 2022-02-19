@@ -32,8 +32,9 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var fontFamily = _a.fontFamily, canvas = _a.canvas, _b = _a.rtl, rtl = _b === void 0 ? false : _b;
         var _this = _super.call(this) || this;
         _this.alignValue = AlignEnum.left;
-        _this.fontValue = '28px "Custom"';
+        _this.fontValue = '24px "Custom"';
         _this.width58 = 384;
+        _this.width76 = 384;
         _this.width80 = 568;
         _this.lineHeight = 32;
         _this.lineHeight0 = 32;
@@ -41,7 +42,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         _this.heightPosition = 32;
         _this.cutAtFinal = false;
         _this.fontFoot = 16; // 给字体下方留下空间，防止截断
-        _this.fontFamily = "Custom";
+        _this.fontFamily = 'Custom';
         _this.lineHeightInterval = 0;
         _this.rtl = false;
         _this.CVS = canvas;
@@ -65,7 +66,8 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
      *
      */
     EscPosImgEncoder.prototype._reset = function () {
-        if (this.CVS) { // 如果是子类调用再执行，父类构造函数调用不能执行，因为this还没初始化
+        if (this.CVS) {
+            // 如果是子类调用再执行，父类构造函数调用不能执行，因为this还没初始化
             this.heightPosition = 32;
             this.ctx = this.CVS.getContext('2d');
             this.ctx.textBaseline = 'bottom';
@@ -118,6 +120,9 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
     EscPosImgEncoder.prototype.setPinterType = function (type) {
         if (type === esc_pos_encoder_1.PrinterWidthEnum._58) {
             this.resize(this.width58, this.CVS.height);
+        }
+        else if (type === esc_pos_encoder_1.PrinterWidthEnum._76) {
+            this.resize(this.width76, this.CVS.height);
         }
         else if (type === esc_pos_encoder_1.PrinterWidthEnum._80) {
             this.resize(this.width80, this.CVS.height);
@@ -182,16 +187,16 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         return this;
     };
     /**
-   * fill text
-   *
-   * @param  {string}   value  Text that needs to be printed
-   * @param  {number}   wrap   Wrap text after this many positions
-   * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
-   *
-   */
+     * fill text
+     *
+     * @param  {string}   value  Text that needs to be printed
+     * @param  {number}   wrap   Wrap text after this many positions
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
+     *
+     */
     EscPosImgEncoder.prototype._fillText = function (text, x, y) {
         if (this._size === 1) {
-            this.ctx.transform(.5, 0, 0, 1, 0, 0);
+            this.ctx.transform(0.5, 0, 0, 1, 0, 0);
             this.ctx.fillText(text, x * 2, y);
             this.ctx.transform(2, 0, 0, 1, 0, 0);
         }
@@ -233,7 +238,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var result;
         try {
             // 初始化打印机，防止持续乱码
-            this._queue([0x1B, 0x40]);
+            this._queue([0x1b, 0x40]);
             var interval = 1000; // 每个图片的最大高度
             var count = Math.ceil(this.CVS.height / interval); // 打碎成多少个图片的拼接
             for (var i = 0; i < count; i++) {
@@ -368,7 +373,7 @@ var EscPosImgEncoder = /** @class */ (function (_super) {
         var _this = this;
         var dishes = _a.dishes, _b = _a.size, size = _b === void 0 ? 1 : _b, bigPrice = _a.bigPrice, largeLineHeight = _a.largeLineHeight, lineBetweenDishes = _a.lineBetweenDishes, specificationInNewLine = _a.specificationInNewLine, showUnitPrice = _a.showUnitPrice;
         var originSize = this._size;
-        var measureTextStr = (bigPrice || showUnitPrice) ? 'x99 9,999,999' : 'x99 999.99';
+        var measureTextStr = bigPrice || showUnitPrice ? 'x99 9,999,999' : 'x99 999.99';
         var countAndPriceLength = this.getStrWidth(measureTextStr);
         var countAndPriceLengthWithUnitPrice = this.getStrWidth('99,999,999 x9 99,999,999'); // 包含单价情况价格和个数的长度
         var getCountAndPriceStr = function (count, price) {

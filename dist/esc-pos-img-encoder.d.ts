@@ -13,6 +13,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     private alignValue;
     private fontValue;
     private width58;
+    private width76;
     private width80;
     private lineHeight;
     private lineHeight0;
@@ -86,13 +87,13 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      */
     text(value: string, wrap?: number): EscPosEncoder;
     /**
-   * fill text
-   *
-   * @param  {string}   value  Text that needs to be printed
-   * @param  {number}   wrap   Wrap text after this many positions
-   * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
-   *
-   */
+     * fill text
+     *
+     * @param  {string}   value  Text that needs to be printed
+     * @param  {number}   wrap   Wrap text after this many positions
+     * @returns {EscPosEncoder}          Return the EscPosEncoder, for easy chaining commands
+     *
+     */
     private _fillText;
     /**
      * Print a newline
@@ -171,7 +172,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      * @param {boolean} bigPrice 小币种价格，默认false
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printFrontDeskDishs({ dishes, size, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine, showUnitPrice }: {
+    printFrontDeskDishs({ dishes, size, bigPrice, largeLineHeight, lineBetweenDishes, specificationInNewLine, showUnitPrice, }: {
         dishes: {
             name: string;
             count: number;
@@ -192,7 +193,7 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      * @param {number} size 字体大小,默认2
      * @returns {EscPosEncoder}  Return the EscPosEncoder, for easy chaining commands
      */
-    printChefDishs({ dishes, size, largeLineHeight, lineBetweenDishes, specificationInNewLine, countFront }: {
+    printChefDishs({ dishes, size, largeLineHeight, lineBetweenDishes, specificationInNewLine, countFront, }: {
         dishes: {
             name: string;
             count: number;

@@ -32,12 +32,12 @@ export default class EscPosEncoder {
   private _58printerParam: PrinterParam = {
     width: 380,
     singleCharLength: 31,
-    doubleCharLength: 15,
+    doubleCharLength: 14,
   };
   private _76printerParam: PrinterParam = {
-    width: 420,
-    singleCharLength: 38,
-    doubleCharLength: 17,
+    width: 380,
+    singleCharLength: 33,
+    doubleCharLength: 15,
   };
   private _80printerParam: PrinterParam = {
     width: 500,
