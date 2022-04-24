@@ -2,6 +2,7 @@ import * as iconv from 'iconv-lite';
 import * as linewrap from 'linewrap';
 import * as Dither from 'canvas-dither';
 import * as Flatten from 'canvas-flatten';
+import * as QRCode from 'qrcode';
 
 declare module 'iconv-lite' {
     export const encodings: Array<string>;
@@ -27,12 +28,12 @@ export default class EscPosEncoder {
     private _state
     protected _size = 0
     private _58printerParam: PrinterParam = {
-      width: 380,
+      width: 384,
       singleCharLength: 31,
       doubleCharLength: 15,
     }
     private _80printerParam: PrinterParam = {
-      width: 500,
+      width: 568,
       singleCharLength: 47,
       doubleCharLength: 23,
     }
@@ -823,6 +824,22 @@ export default class EscPosEncoder {
         0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x51, 0x30,
       ]);
 
+      return this;
+    }
+
+    /**
+     * QR code Img
+     *
+     * @param  {string}           value  the value of the qr code
+     * @param  {number}           model  model of the qrcode, either 1 or 2
+     * @param  {number}           size   size of the qrcode, a value between 1 and 8
+     * @param  {string}           errorlevel  the amount of error correction used, either 'l', 'm', 'q', 'h'
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    async qrcodeImg(value: string, model?: number, size?: number, errorlevel?: string): Promise<EscPosEncoder> {
+      const canvas = await QRCode.toCanvas(value);
+      this.image(canvas, this._printerParam.width, this._printerParam.width, 'threshold');
       return this;
     }
 

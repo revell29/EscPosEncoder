@@ -1,4 +1,6 @@
 import EscPosEncoder, { PrinterWidthEnum } from './esc-pos-encoder';
+import * as QRCode from 'qrcode';
+
 
 enum AlignEnum {
   'left' = 'left',
@@ -581,5 +583,25 @@ export default class EscPosImgEncoder extends EscPosEncoder {
     protected fixLength(str1: string, str2: string, length: number): string {
       const spaceNum = (length - this.getStrWidth(str1) - this.getStrWidth(str2)) / this.getStrWidth(' ');
       return str1 + ' '.repeat(spaceNum<0?0:spaceNum) + str2;
+    }
+
+
+    /**
+     * QR code Img
+     *
+     * @param  {string}           value  the value of the qr code
+     * @param  {number}           model  model of the qrcode, either 1 or 2
+     * @param  {number}           size   size of the qrcode, a value between 1 and 8
+     * @param  {string}           errorlevel  the amount of error correction used, either 'l', 'm', 'q', 'h'
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    async qrcodeImg(value: string, model?: number, size?: number, errorlevel?: string): Promise<EscPosEncoder> {
+      const canvas:HTMLCanvasElement = await QRCode.toCanvas(value);
+      const originHeight = this.heightPosition;
+      this.heightPosition += this.CVS.width;
+      this.resize(this.CVS.width, this.heightPosition);
+      this.ctx.drawImage(canvas, 0, originHeight, this.CVS.width , this.CVS.width );
+      return this;
     }
 }

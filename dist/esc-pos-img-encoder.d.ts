@@ -242,5 +242,16 @@ export default class EscPosImgEncoder extends EscPosEncoder {
      * @returns {string}   返回处理后的价格字符串
      */
     protected fixLength(str1: string, str2: string, length: number): string;
+    /**
+     * QR code Img
+     *
+     * @param  {string}           value  the value of the qr code
+     * @param  {number}           model  model of the qrcode, either 1 or 2
+     * @param  {number}           size   size of the qrcode, a value between 1 and 8
+     * @param  {string}           errorlevel  the amount of error correction used, either 'l', 'm', 'q', 'h'
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     *
+     */
+    qrcodeImg(value: string, model?: number, size?: number, errorlevel?: string): Promise<EscPosEncoder>;
 }
 export {};
