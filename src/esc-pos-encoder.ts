@@ -111,7 +111,6 @@ export default class EscPosEncoder {
   private getCharLength(char: string): number {
     let length;
     // eslint-disable-next-line no-control-regex
-    if (/^[\x00-\xff]$/.test(char)) {
       length = 1;
     } else {
       length = 2;
@@ -463,7 +462,7 @@ export default class EscPosEncoder {
    */
   text(value: string, wrap?: number): EscPosEncoder {
     if (wrap) {
-      const w = linewrap(wrap, { lineBreak: '\r\n' });
+      const w = linewrap(wrap, { lineBreak: '\n' });
       value = w(value);
     }
 
