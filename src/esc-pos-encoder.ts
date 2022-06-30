@@ -111,6 +111,7 @@ export default class EscPosEncoder {
   private getCharLength(char: string): number {
     let length;
     // eslint-disable-next-line no-control-regex
+    if (/^[\x00-\xff]$/.test(char)) {
       length = 1;
     } else {
       length = 2;

@@ -1,6 +1,6 @@
 {
-  "name": "@jubelio-pos/esc-pos-encoder",
-  "version": "5.3.1",
+  "name": "@revell29/esc-pos-encoder",
+  "version": "1.0.0",
   "description": "Create a set of commands that can be send to any receipt printer that supports ESC/POS",
   "main": "dist/esc-pos-encoder.js",
   "types": "dist/esc-pos-encoder.d.ts",

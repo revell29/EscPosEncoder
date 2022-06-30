@@ -420,7 +420,7 @@ var EscPosEncoder = /** @class */ (function () {
      */
     EscPosEncoder.prototype.text = function (value, wrap) {
         if (wrap) {
-            var w = linewrap(wrap, { lineBreak: '\r\n' });
+            var w = linewrap(wrap, { lineBreak: '\n' });
             value = w(value);
         }
         var bytes = this._encode(value);
